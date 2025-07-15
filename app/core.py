@@ -31,7 +31,7 @@ embedding_progress: Dict[str, Any] = {
 }
 
 def create_rag_chain():
-    """
+    """vis
     Create and return a RAG chain with LLM, embeddings, and vector store.
     Returns:
         Tuple: Configured RAG chain components
