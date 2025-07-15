@@ -2,86 +2,119 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Login</title>
+    <title>Admin Login - Pusat Pengembangan Bahasa UIN Jakarta</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #f5f6fa; min-height: 100vh; }
-        .login-outer { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        body { 
+            background-color: #f0f4f8; 
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .login-card {
             width: 100%;
-            max-width: 370px;
-            border-radius: 24px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
-            background: #fff;
-            padding: 36px 32px 28px 32px;
-            margin: 32px 0;
-        }
-        .login-logo {
-            display: block;
-            margin: 0 auto 18px auto;
-            height: 48px;
-        }
-        .login-title {
-            text-align: center;
-            font-weight: 600;
-            font-size: 1.4rem;
-            margin-bottom: 8px;
-        }
-        .login-subtitle {
-            text-align: center;
-            color: #888;
-            font-size: 1rem;
-            margin-bottom: 18px;
-        }
-        .form-label { font-weight: 500; }
-        .form-control {
+            max-width: 420px;
             border-radius: 12px;
-            font-size: 1.1rem;
-            padding: 10px 14px;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.08);
+            background: #fff;
+            padding: 40px;
+            border-top: 5px solid #003366; /* Biru Tua UIN */
+        }
+        .header-logo {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .header-logo img {
+            height: 80px; /* Placeholder for logo */
             margin-bottom: 12px;
         }
+        .header-logo h5 {
+            font-weight: 600;
+            color: #003366; /* Biru Tua UIN */
+        }
+        .header-logo p {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+        .form-label { font-weight: 500; color: #343a40; }
+        .form-control {
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 1px solid #ced4da;
+        }
         .form-control:focus {
-            border-color: #4f8cff;
-            box-shadow: 0 0 0 2px #4f8cff22;
+            border-color: #d4af37; /* Emas UIN */
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
         }
         .btn-primary {
-            border-radius: 12px;
+            border-radius: 8px;
+            padding: 12px;
             font-size: 1.1rem;
-            padding: 10px 0;
             font-weight: 600;
-            background: linear-gradient(90deg, #4f8cff 0%, #6fc3ff 100%);
+            background-color: #003366; /* Biru Tua UIN */
             border: none;
+            transition: background-color 0.2s;
         }
-        .btn-primary:focus, .btn-primary:hover {
-            background: linear-gradient(90deg, #3a7be0 0%, #5bb6e6 100%);
+        .btn-primary:hover {
+            background-color: #002244; /* Biru lebih gelap */
         }
-        .alert { border-radius: 10px; font-size: 1rem; }
-        @media (max-width: 500px) {
-            .login-card { padding: 24px 8px 18px 8px; }
+        .alert { border-radius: 8px; }
+        .app-footer {
+            text-align: center;
+            padding: 15px 0;
+            font-size: 0.85rem;
+            color: #6c757d;
+            background-color: #ffffff;
+            border-top: 1px solid #e9ecef;
         }
     </style>
 </head>
 <body>
-<div class="login-outer">
+
+<div class="main-content">
     <div class="login-card">
-        <img src="https://upload.wikimedia.org/wikipedia/id/a/a3/Logo_UIN_Syarif_Hidayatullah_Jakarta.png" alt="Logo" class="login-logo" />
-        <div class="login-title">Admin Login</div>
-        <div class="login-subtitle">Access the knowledge base dashboard</div>
+        <div class="header-logo">
+            <img src="C:\ppb-ai-chatbot\templates\images\PPBOT Logo.png" alt="Logo Pusat Pengembangan Bahasa UIN Jakarta">
+            <h5>Pusat Pengembangan Bahasa</h5>
+            <p>UIN Syarif Hidayatullah Jakarta</p>
+        </div>
+        
         {% if error %}
             <div class="alert alert-danger">{{ error }}</div>
         {% endif %}
         {% if message %}
             <div class="alert alert-success">{{ message }}</div>
         {% endif %}
+
         <form method="post">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" id="username" name="username" required autofocus>
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" required>
-            <button type="submit" class="btn btn-primary w-100 mt-2">Login</button>
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required autofocus>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Login</button>
         </form>
     </div>
 </div>
+
+<footer class="app-footer">
+    &copy; 2025 Pusat Pengembangan Bahasa, UIN Syarif Hidayatullah Jakarta.
+</footer>
+
 </body>
-</html> 
+</html>
