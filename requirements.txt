@@ -1,0 +1,16 @@
+langchain
+langchain-google-genai
+langchain-community
+faiss-cpu
+flask
+python-dotenv
+gunicorn
+PyMuPDF
+pandas
+Flask-Login
+Flask-SQLAlchemy
+click 
+nomic
+langsmith
+ragas
+datasets

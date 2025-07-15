@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body class="bg-light">
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Admin Dashboard</h2>
+        <form method="post" action="/admin/logout" style="display:inline;">
+            <button type="submit" class="btn btn-outline-danger">Logout</button>
+        </form>
+    </div>
+    <div aria-live="polite" aria-atomic="true" class="position-relative">
+        <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+    </div>
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    {% if message %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endif %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Upload Knowledge Base File</h5>
+            <form id="upload-form" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <input class="form-control" type="file" name="file" id="file-input" required>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <label for="chunk-size" class="form-label">Chunk Size</label>
+                        <input type="number" class="form-control" id="chunk-size" name="chunk_size" value="1000" min="100" max="10000" step="100" required>
+                    </div>
+                    <div class="col">
+                        <label for="chunk-overlap" class="form-label">Chunk Overlap</label>
+                        <input type="number" class="form-control" id="chunk-overlap" name="chunk_overlap" value="200" min="0" max="5000" step="50" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <button type="button" class="btn btn-info" id="preview-btn">Preview Chunking</button>
+                </div>
+                <div id="preview-area" class="mb-3" style="display:none;">
+                    <h6>Chunking Preview</h6>
+                    <div id="preview-chunks" style="max-height:300px; overflow:auto; background:#f8f9fa; border:1px solid #ddd; padding:10px; border-radius:8px;"></div>
+                </div>
+                <button class="btn btn-primary" type="submit" id="process-btn" disabled>Process and Save to Knowledge Base</button>
+            </form>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Knowledge Base Files</h5>
+            <table class="table table-bordered table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Type</th>
+                        <th>Uploaded At</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for file in files %}
+                    <tr>
+                        <td>{{ file.filename }}</td>
+                        <td>{{ file.filetype }}</td>
+                        <td>{{ file.uploaded_at }}</td>
+                        <td>
+                            {% if file.changed %}
+                                <span class="badge bg-warning text-dark">Changed</span>
+                            {% else %}
+                                <span class="badge bg-success">Up-to-date</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-file-id="{{ file.id }}" data-file-name="{{ file.filename }}" title="Delete this file"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Embedding & Reprocessing</h5>
+            <form method="post" action="/admin/embed" style="display:inline;">
+                <button class="btn btn-success" type="submit" id="embed-btn">Re-embed Changed Files</button>
+            </form>
+            <form method="post" action="/admin/embed_all" style="display:inline; margin-left: 10px;">
+                <button class="btn btn-secondary" type="submit">Force Re-embed All Files</button>
+            </form>
+            <div class="mt-3" id="embed-progress-container" style="display:none;">
+                <div class="progress">
+                    <div id="embed-progress-bar" class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+                </div>
+                <div class="mt-2" id="embed-progress-status"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete <span id="modal-file-name" class="fw-bold"></span>?
+      </div>
+      <div class="modal-footer">
+        <form id="delete-form" method="post">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+alert('Preview script loaded!');
+function pollEmbedProgress() {
+    fetch('/admin/embed_progress')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'idle' || data.status === 'done' || data.status === 'error') {
+                document.getElementById('embed-progress-container').style.display = 'none';
+            } else {
+                document.getElementById('embed-progress-container').style.display = 'block';
+                let percent = data.progress || 0;
+                document.getElementById('embed-progress-bar').style.width = percent + '%';
+                document.getElementById('embed-progress-bar').innerText = percent + '%';
+                document.getElementById('embed-progress-status').innerText = data.message || '';
+            }
+            if (data.status === 'running' || data.status === 'starting') {
+                setTimeout(pollEmbedProgress, 1000);
+            }
+        });
+}
+document.getElementById('embed-btn').addEventListener('click', function() {
+    setTimeout(pollEmbedProgress, 500);
+});
+pollEmbedProgress();
+// Toast logic
+function showToast(message, type = 'success') {
+    const toastId = 'toast-' + Date.now();
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-bg-${type} border-0 mb-2`;
+    toast.id = toastId;
+    toast.role = 'alert';
+    toast.ariaLive = 'assertive';
+    toast.ariaAtomic = 'true';
+    toast.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">${message}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    `;
+    document.getElementById('toast-container').appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast, { delay: 3500 });
+    bsToast.show();
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+// Modal logic for delete
+const deleteModal = document.getElementById('deleteModal');
+deleteModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const fileId = button.getAttribute('data-file-id');
+    const fileName = button.getAttribute('data-file-name');
+    document.getElementById('modal-file-name').textContent = fileName;
+    const form = document.getElementById('delete-form');
+    form.action = `/admin/delete/${fileId}`;
+});
+// Tooltip init
+const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+tooltipTriggerList.forEach(function (el) {
+    new bootstrap.Tooltip(el);
+});
+// --- Chunking Preview Logic ---
+document.addEventListener('DOMContentLoaded', function() {
+const previewBtn = document.getElementById('preview-btn');
+const processBtn = document.getElementById('process-btn');
+const previewArea = document.getElementById('preview-area');
+const previewChunks = document.getElementById('preview-chunks');
+const uploadForm = document.getElementById('upload-form');
+let previewed = false;
+
+previewBtn.addEventListener('click', function() {
+    const fileInput = document.getElementById('file-input');
+    const chunkSize = document.getElementById('chunk-size').value;
+    const chunkOverlap = document.getElementById('chunk-overlap').value;
+    if (!fileInput.files.length) {
+        showToast('Please select a file first.', 'danger');
+        return;
+    }
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('chunk_size', chunkSize);
+    formData.append('chunk_overlap', chunkOverlap);
+    previewBtn.disabled = true;
+    previewBtn.innerText = 'Loading...';
+    fetch('/api/v1/preview-chunking', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log('Preview chunking response:', data);
+        previewBtn.disabled = false;
+        previewBtn.innerText = 'Preview Chunking';
+        if (data.success) {
+            if (data.preview_chunks && data.preview_chunks.length > 0) {
+                previewArea.style.display = 'block';
+                previewChunks.innerHTML = '';
+                data.preview_chunks.forEach(chunk => {
+                    const div = document.createElement('div');
+                    div.className = 'mb-2';
+                    div.innerHTML = `<b>Chunk ${chunk.chunk_number}:</b><pre style="white-space:pre-wrap;">${chunk.content}</pre>`;
+                    previewChunks.appendChild(div);
+                });
+                processBtn.disabled = false;
+                previewed = true;
+            } else {
+                previewArea.style.display = 'block';
+                previewChunks.innerHTML = `<div class='text-warning'>No preview chunks could be generated. The file may not contain extractable text or may be scanned images.</div>`;
+                processBtn.disabled = true;
+                previewed = false;
+            }
+        } else {
+            previewArea.style.display = 'block';
+            previewChunks.innerHTML = `<div class='text-danger'>${data.error || 'Preview failed.'}</div>`;
+            processBtn.disabled = true;
+            previewed = false;
+        }
+    })
+    .catch(err => {
+        previewBtn.disabled = false;
+        previewBtn.innerText = 'Preview Chunking';
+        previewArea.style.display = 'block';
+        previewChunks.innerHTML = `<div class='text-danger'>Preview failed. Please try again.</div>`;
+        processBtn.disabled = true;
+        previewed = false;
+    });
+});
+// Prevent form submit if preview not done
+uploadForm.addEventListener('submit', function(e) {
+    if (!previewed) {
+        e.preventDefault();
+        showToast('Please preview chunking before processing.', 'danger');
+    }
+});
+});
+</script>
+{% if message %}
+<script>
+    showToast({{ message|tojson|safe }}, 'success');
+</script>
+{% endif %}
+{% if error %}
+<script>
+    showToast({{ error|tojson|safe }}, 'danger');
+</script>
+{% endif %}
+</body>
+</html> 

@@ -1,0 +1,418 @@
+from flask import Flask, request, render_template, jsonify, redirect, flash
+from app.core import get_response, get_system_info, get_embedding_progress, get_file_status, split_documents_by_type
+import os
+from dotenv import load_dotenv, find_dotenv
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from app.models import db, AdminUser, KnowledgeBaseFile
+import click
+from werkzeug.utils import secure_filename
+import hashlib
+from langchain_community.document_loaders import PyMuPDFLoader
+from langchain.schema import Document
+import pandas as pd
+import io
+
+load_dotenv()
+import os
+print("--- DEBUGGING ENV ---")
+print(f"Current Working Directory: {os.getcwd()}")
+print(f".env file found at: {find_dotenv()}")
+print(f"NOMIC_API_KEY after load_dotenv(): {os.getenv('NOMIC_API_KEY')}")
+print("--------------------")
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'devsecretkey')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = 'documents'
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 32 MB
+
+db.init_app(app)
+login_manager = LoginManager()
+login_manager.login_view = 'admin_login'
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(AdminUser, int(user_id))
+
+# Ensure templates directory exists for Flask
+if not os.path.exists('templates'):
+    os.makedirs('templates')
+
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+ALLOWED_EXTENSIONS = {'pdf', 'txt', 'csv'}
+
+# Helper to check allowed file
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """
+    Health check endpoint for monitoring.
+    """
+    return {"status": "healthy", "message": "RAG chatbot AI is running", "language": "Indonesian"}
+
+@app.route('/', methods=['GET'])
+def home():
+    """
+    Home endpoint with basic information.
+    """
+    return """
+    <h1>🎓 Customer Service Teknik Informatika UIN Jakarta</h1>
+    <p>Ini adalah chatbot AI Customer Service untuk Program Studi Teknik Informatika UIN Syarif Hidayatullah Jakarta.</p>
+    <p>Bot ini dapat menjawab pertanyaan dalam Bahasa Indonesia berdasarkan dokumen akademik yang tersedia.</p>
+    
+    <h3>Layanan yang Tersedia:</h3>
+    <ul>
+        <li>✅ Informasi kurikulum dan mata kuliah</li>
+        <li>✅ Panduan akademik dan administrasi</li>
+        <li>✅ Informasi dosen dan jadwal</li>
+        <li>✅ Bantuan pendaftaran dan registrasi</li>
+        <li>✅ Panduan PKL dan skripsi</li>
+    </ul>
+    
+    <h3>Akses:</h3>
+    <ul>
+        <li><a href="/chat">💬 Web Chat Interface</a></li>
+        <li><code>/whatsapp</code> (WhatsApp)</li>
+        <li><code>/webhook</code> (alternative)</li>
+        <li><code>/health</code> (health check)</li>
+    </ul>
+    
+    <p><strong>Status:</strong> <span style="color: green;">🟢 Online</span></p>
+    """
+
+@app.route('/test', methods=['GET'])
+def test_endpoint():
+    """
+    Test endpoint to verify the system is working.
+    """
+    try:
+        system_info = get_system_info()
+        return {
+            "status": "success",
+            "message": "Sistem berfungsi dengan baik",
+            "system_info": system_info,
+            "language": "Indonesian"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Error: {str(e)}",
+            "language": "Indonesian"
+        }
+
+@app.route('/chat', methods=['GET', 'POST'])
+def web_chat():
+    """
+    Web chat endpoint: GET renders chat UI, POST handles AJAX chat.
+    """
+    if request.method == 'GET':
+        return render_template('chat.html')
+    if request.method == 'POST':
+        data = request.get_json()
+        user_message = data.get('message', '').strip()
+        user_id = request.remote_addr  # Use IP as session/user id for demo
+        if not user_message:
+            return jsonify({'response': 'Silakan masukkan pesan.'})
+        ai_response = get_response(user_message, user_id)
+        return jsonify({'response': ai_response})
+
+@app.cli.command('init-db')
+@click.option('--username', prompt=True, help='Admin username')
+@click.option('--password', prompt=True, hide_input=True, confirmation_prompt=True, help='Admin password')
+def init_db(username, password):
+    """Initialize the database and create an admin user."""
+    with app.app_context():
+        db.create_all()
+        if AdminUser.query.filter_by(username=username).first():
+            print('Admin user already exists.')
+            return
+        admin = AdminUser(username=username)
+        admin.set_password(password)
+        db.session.add(admin)
+        db.session.commit()
+        print(f'Admin user {username} created.')
+
+# Admin login
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = AdminUser.query.filter_by(username=username).first()
+        if user and user.check_password(password):
+            login_user(user)
+            return redirect('/admin')
+        else:
+            return render_template('admin_login.html', error='Invalid credentials')
+    return render_template('admin_login.html')
+
+# Admin logout
+@app.route('/admin/logout', methods=['GET', 'POST'])
+@login_required
+def admin_logout():
+    logout_user()
+    return redirect('/admin/login')
+
+# Admin dashboard
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required
+def admin_dashboard():
+    files = get_file_status()
+    if request.method == 'POST':
+        print('POST data:', request.form)
+        print('FILES:', request.files)
+        # Handle file upload
+        if 'file' not in request.files:
+            print('No file part in request.files')
+            return render_template('admin_dashboard.html', user=current_user, files=files, error='No file part')
+        file = request.files['file']
+        if file.filename == '':
+            print('No selected file')
+            return render_template('admin_dashboard.html', user=current_user, files=files, error='No selected file')
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            # Calculate file hash (re-open file after saving)
+            with open(filepath, 'rb') as f:
+                filehash = hashlib.sha256(f.read()).hexdigest()
+            filetype = filename.rsplit('.', 1)[1].lower()
+            # Check if file already exists (by hash)
+            existing = KnowledgeBaseFile.query.filter_by(filehash=filehash).first()
+            if existing:
+                print('File already exists')
+                return render_template('admin_dashboard.html', user=current_user, files=files, error='File already exists')
+            # Get chunking params from form
+            chunk_size = int(request.form.get('chunk_size', 2000))
+            chunk_overlap = int(request.form.get('chunk_overlap', 400))
+            # Optionally: store these in the DB or pass to embedding logic
+            kb_file = KnowledgeBaseFile(filename=filename, filetype=filetype, filepath=filepath, filehash=filehash)
+            db.session.add(kb_file)
+            db.session.commit()
+            print(f'File uploaded successfully with chunk_size={chunk_size}, chunk_overlap={chunk_overlap}')
+            files = get_file_status()
+            return render_template('admin_dashboard.html', user=current_user, files=files, message='File uploaded!')
+        else:
+            print('Invalid file type')
+            return render_template('admin_dashboard.html', user=current_user, files=files, error='Invalid file type')
+    # GET: show dashboard
+    return render_template('admin_dashboard.html', user=current_user, files=files)
+
+# Delete file
+@app.route('/admin/delete/<int:file_id>', methods=['POST'])
+@login_required
+def delete_file(file_id):
+    kb_file = KnowledgeBaseFile.query.get(file_id)
+    if not kb_file:
+        flash('File not found or already deleted.', 'warning')
+        return redirect('/admin')
+    try:
+        os.remove(kb_file.filepath)
+    except Exception:
+        pass
+    db.session.delete(kb_file)
+    db.session.commit()
+    # After deleting, check if there are any files left
+    if KnowledgeBaseFile.query.count() == 0:
+        import shutil
+        vector_db_path = os.path.join("vector_db", "faiss_index")
+        if os.path.exists(vector_db_path):
+            shutil.rmtree(vector_db_path)
+    flash('File deleted!', 'success')
+    return redirect('/admin')
+
+# Placeholder for embedding and progress
+@app.route('/admin/embed', methods=['POST'])
+@login_required
+def embed_files():
+    from app.core import start_embedding
+    started = start_embedding(app, force_all=False)
+    if started:
+        msg = 'Embedding started for changed files! Progress will update below.'
+    else:
+        msg = 'Embedding is already running.'
+    files = get_file_status()
+    return render_template('admin_dashboard.html', user=current_user, files=files, message=msg)
+
+@app.route('/admin/embed_all', methods=['POST'])
+@login_required
+def embed_all_files():
+    from app.core import start_embedding
+    started = start_embedding(app, force_all=True)
+    if started:
+        msg = 'Force re-embedding started for all files! Progress will update below.'
+    else:
+        msg = 'Embedding is already running.'
+    files = get_file_status()
+    return render_template('admin_dashboard.html', user=current_user, files=files, message=msg)
+
+@app.route('/admin/embed_progress')
+@login_required
+def embed_progress():
+    return jsonify(get_embedding_progress())
+
+@app.route('/api/chat', methods=['POST'])
+def api_chat():
+    data = request.get_json()
+    message = data.get('message', '').strip()
+    user_id = data.get('user_id', request.remote_addr)
+    if not message:
+        return jsonify({'error': 'No message provided'}), 400
+    response = get_response(message, user_id)
+    return jsonify({'response': response})
+
+@app.route('/api/files', methods=['GET'])
+def api_files():
+    files = KnowledgeBaseFile.query.all()
+    file_list = [
+        {
+            'id': f.id,
+            'filename': f.filename,
+            'filetype': f.filetype,
+            'uploaded_at': f.uploaded_at.strftime('%Y-%m-%d %H:%M'),
+            'filepath': f.filepath
+        } for f in files
+    ]
+    return jsonify({'files': file_list})
+
+@app.route('/api/v1/preview-chunking', methods=['POST'])
+def preview_chunking():
+    print('[PREVIEW] Endpoint called')
+    print(f'[PREVIEW] Request method: {request.method}')
+    print(f'[PREVIEW] Request files: {list(request.files.keys())}')
+    print(f'[PREVIEW] Request form: {list(request.form.keys())}')
+    
+    file = request.files.get('file')
+    if file:
+        print(f'[PREVIEW] File received: {file.filename}, size: {len(file.read())} bytes')
+        file.seek(0)  # Reset file pointer after reading
+    else:
+        print('[PREVIEW] No file in request.files')
+        return jsonify({'success': False, 'error': 'No file uploaded'}), 400
+    
+    chunk_size = int(request.form.get('chunk_size', 1000))
+    chunk_overlap = int(request.form.get('chunk_overlap', 200))
+    print(f"[PREVIEW] Received file: {file.filename if file else None}, chunk_size={chunk_size}, chunk_overlap={chunk_overlap}")
+    
+    filename = file.filename
+    filetype = filename.rsplit('.', 1)[-1].lower()
+    print(f'[PREVIEW] File type detected: {filetype}')
+    preview_docs = []
+    
+    try:
+        if filetype == 'pdf':
+            import tempfile
+            try:
+                print('[PREVIEW] Processing PDF file...')
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
+                    file.save(tmp)
+                    tmp_path = tmp.name
+                    print(f'[PREVIEW] PDF saved to temp file: {tmp_path}')
+                
+                loader = PyMuPDFLoader(tmp_path)
+                docs = loader.load()
+                print(f"[PREVIEW] PDF: loaded {len(docs)} pages")
+                
+                # Collect up to 3 pages with extractable text from the first 10 pages
+                preview_docs = []
+                for i, d in enumerate(docs[:10]):
+                    d.metadata['file_type'] = 'pdf'
+                    text_len = len(d.page_content.strip()) if d.page_content else 0
+                    print(f"[PREVIEW] Page {i+1}: text length = {text_len}")
+                    if d.page_content and d.page_content.strip():
+                        preview_docs.append(d)
+                    if len(preview_docs) >= 3:
+                        break
+                print(f"[PREVIEW] Using {len(preview_docs)} non-empty pages for preview")
+                
+                # Clean up temp file
+                import os
+                try:
+                    os.unlink(tmp_path)
+                except:
+                    pass
+                    
+            except Exception as e:
+                print(f"[PREVIEW] Exception during PDF processing: {e}")
+                import traceback
+                traceback.print_exc()
+                return jsonify({'success': False, 'error': f'Failed to process the PDF file: {str(e)}'}), 400
+        elif filetype == 'csv':
+            try:
+                print('[PREVIEW] Processing CSV file...')
+                df = pd.read_csv(file, nrows=100)
+                for index, row in df.iterrows():
+                    row_text = ""
+                    for column, value in row.items():
+                        if pd.notna(value):
+                            row_text += f"{column}: {value}\n"
+                    if row_text.strip():
+                        metadata = {"source": filename, "row": index + 1, "file_type": "csv"}
+                        preview_docs.append(Document(page_content=row_text.strip(), metadata=metadata))
+                print(f"[PREVIEW] CSV: loaded {len(df)} rows, preview_docs={len(preview_docs)}")
+            except Exception as e:
+                print(f"[PREVIEW] Exception during CSV processing: {e}")
+                return jsonify({'success': False, 'error': 'Failed to process the CSV file. It may be corrupt or unreadable.'}), 400
+        elif filetype == 'txt':
+            try:
+                print('[PREVIEW] Processing TXT file...')
+                text = file.read(5000).decode('utf-8', errors='ignore')
+                preview_docs = [Document(page_content=text, metadata={"source": filename, "file_type": "txt"})]
+                print(f"[PREVIEW] TXT: loaded {len(text)} chars")
+            except Exception as e:
+                print(f"[PREVIEW] Exception during TXT processing: {e}")
+                return jsonify({'success': False, 'error': 'Failed to process the TXT file. It may be corrupt or unreadable.'}), 400
+        else:
+            print(f"[PREVIEW] Unsupported file type: {filetype}")
+            return jsonify({'success': False, 'error': 'Unsupported file type'}), 400
+            
+        if not preview_docs:
+            print('[PREVIEW] No extractable text found in the first 10 pages of the PDF.')
+            return jsonify({'success': False, 'error': 'No extractable text found in the first 10 pages of the PDF. The file may be scanned images or empty.'}), 200
+            
+        print(f'[PREVIEW] About to call split_documents_by_type with {len(preview_docs)} docs')
+        chunks = split_documents_by_type(preview_docs, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+        print(f"[PREVIEW] Chunks generated: {len(chunks)}")
+        
+        if not chunks:
+            print('[PREVIEW] No chunks could be generated from the file preview.')
+            return jsonify({'success': False, 'error': 'No chunks could be generated from the file preview. The file may be empty or not contain extractable text.'}), 200
+            
+        preview_chunks = []
+        for i, chunk in enumerate(chunks[:10]):
+            preview_chunks.append({
+                'chunk_number': i+1,
+                'content': chunk.page_content
+            })
+        print(f'[PREVIEW] Returning {len(preview_chunks)} preview chunks')
+        return jsonify({'success': True, 'preview_chunks': preview_chunks})
+        
+    except Exception as e:
+        print(f"[PREVIEW] Exception: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': f'An unexpected error occurred during preview: {str(e)}'}), 500
+
+if __name__ == "__main__":
+    # Get port from environment or default to 5000
+    port = int(os.environ.get("PORT", 5000))
+    
+    print(f"🚀 Starting Virtual Assistant Pusat Pengembangan Bahasa UIN Jakarta on port {port}")
+    print("🇮🇩 Language: Indonesian")
+    print("🎓 Service: Information & Support")
+    print("\nMake sure to:")
+    print("1. Set up your environment variables in .env file")
+    print("2. Run ingest.py to create the vector store")
+    print("3. Configure your Twilio webhook URL to point to this server")
+    print("4. Test with /info or /help commands")
+    print("5. Access web chat at: http://localhost:" + str(port) + "/chat")
+    
+    app.run(host="0.0.0.0", port=port, debug=True) 
