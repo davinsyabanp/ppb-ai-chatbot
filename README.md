@@ -1,49 +1,45 @@
-# RAG Chatbot with Google Gemini
+# RAG Chatbot AI (PPB UIN Jakarta)
 
-A Retrieval-Augmented Generation (RAG) chatbot that answers questions based on local documents, accessible via a web chat interface. Powered by Google Gemini Pro and local FAISS vector store.
+A Retrieval-Augmented Generation (RAG) chatbot that answers questions based on local documents, accessible via a web chat interface. Supports Google Gemini, local LLMs via Ollama, and advanced evaluation with RAGAS or custom LLM metrics.
+
+---
 
 ## Features
 
 - 🤖 **RAG-powered responses** based on local document knowledge base
-- 🧠 **Google Gemini** for text generation
-- 🔍 **Local embeddings** using nomic-embed-text model
+- 🧠 **Google Gemini** and **Ollama (local LLMs)** for text generation
+- 🔍 **Local embeddings** using Nomic Atlas
 - 📚 **FAISS vector store** for efficient document retrieval
 - 📄 **Multi-format support** (PDF, TXT, CSV documents)
 - 📊 **CSV processing** with row-by-row conversion for structured data
+- 📈 **Evaluation scripts**: RAGAS (OpenAI), Gemini, and Ollama (local)
+- 🛡️ **Langsmith monitoring** and tracing support
 
-## Architecture
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   WhatsApp      │    │   Twilio        │    │   Flask App     │
-│   (User)        │───▶│   Gateway       │───▶│   (Webhook)     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                                       │
-                                                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Google        │    │   Ollama        │    │   FAISS         │
-│   Gemini Pro    │◀───│   Embeddings    │◀───│   Vector Store  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
+---
 
 ## Prerequisites
 
-1. **Python 3.8+**
-2. **Nomic API key** with `nomic-embed-text:v1.5` model
-3. **Google AI Studio API key**
-4. **Twilio account** with WhatsApp sandbox
+- **Python 3.8+**
+- **Nomic API key** (for embeddings)
+- **Google API key** (for Gemini, if used)
+- **Ollama** (for local LLMs, e.g., llama3, deepseek, mistral, etc.)
+- **openpyxl** (for Excel evaluation output)
+- (Optional) **OpenAI API key** (for RAGAS evaluation)
+
+---
 
 ## Installation
 
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd rag-chatbot-ai
+   cd Chatbot\ AI\ All\ Using\ API\ Ver\ 1.1.0
    ```
 
 2. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
+   pip install openpyxl
    ```
 
 3. **Configure environment variables:**
@@ -53,18 +49,47 @@ A Retrieval-Augmented Generation (RAG) chatbot that answers questions based on l
    Edit `.env` with your credentials:
    ```env
    GOOGLE_API_KEY="your_google_api_key_here"
-   NOMIC_API_KEY= "yout_nomic_api_key_here"
+   NOMIC_API_KEY="your_nomic_api_key_here"
+   # For Langsmith monitoring
+   LANGCHAIN_TRACING_V2="true"
+   LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
+   LANGCHAIN_API_KEY="YOUR_LANGSMITH_API_KEY"
+   LANGCHAIN_PROJECT="Chatbot PPB"
+   # For OpenAI (if using RAGAS)
+   OPENAI_API_KEY="your_openai_api_key_here"
    ```
 
-## Setup Instructions
+---
+
+## Project Structure
+
+```
+Chatbot AI All Using API Ver 1.1.0/
+├── app/
+│   ├── __init__.py
+│   ├── core.py            # RAG chain logic
+│   ├── models.py          # LLM and embedding model initialization
+│   └── vector_store.py    # FAISS vector store operations
+├── documents/             # Source documents folder (PDF, CSV, etc.)
+├── vector_db/             # FAISS index and vector store
+├── main.py                # Flask web server
+├── ingest.py              # Document processing script
+├── evaluation.py          # RAGAS/OpenAI evaluation script
+├── gemini_evaluation.py   # Gemini-based evaluation script
+├── ollama_evaluation.py   # Ollama-based (local LLM) evaluation script
+├── requirements.txt       # Python dependencies
+├── env.example            # Environment variables template
+├── .env                   # Your environment variables (not tracked)
+├── .gitignore             # Ignore patterns for secrets, data, etc.
+└── README.md              # This file
+```
+
+---
+
+## Usage
 
 ### 1. Add Documents
 Place your source documents (PDF, TXT, CSV) in the `documents/` folder.
-
-**Supported formats:**
-- **PDF files** (.pdf) - Extracted text content
-- **Text files** (.txt) - Plain text content
-- **CSV files** (.csv) - Structured data converted to text format
 
 ### 2. Create Vector Store
 ```bash
@@ -72,8 +97,7 @@ python ingest.py
 ```
 This will:
 - Load documents from the `documents/` folder
-- Process CSV files row by row (each row becomes a document chunk)
-- Split them into chunks
+- Process CSV files row by row
 - Create embeddings using Nomic
 - Save the FAISS vector store to `vector_db/`
 
@@ -83,107 +107,72 @@ python main.py
 ```
 The server will start on `http://localhost:5000`
 
-## Usage
+---
 
-1. **Upload documents** via the web interface
-2. **Ask questions** about the content in your documents
-3. **Receive AI-powered responses** based on your knowledge base
+## Evaluation & Monitoring
 
-**Example questions for CSV data:**
-- "Who works in the Engineering department?"
-- "What is Jane Smith's position?"
-- "How many employees are there?"
-- "What departments do we have?"
-
-## Project Structure
-
-```
-rag-chatbot-ai/
-├── app/
-│   ├── __init__.py          # Package initialization
-│   ├── models.py            # LLM and embedding model initialization
-│   ├── core.py              # RAG chain logic
-│   └── vector_store.py      # FAISS vector store operations
-├── documents/               # Source documents folder
-├── main.py                  # Flask web server
-├── ingest.py                # Document processing script
-├── setup.py                 # Setup and testing script
-├── requirements.txt         # Python dependencies
-├── env.example              # Environment variables template
-└── README.md                # This file
-```
-
-## API Endpoints
-
-- `GET /` - Home page with basic information
-- `GET /health` - Health check endpoint
-- `GET /chat` - Web chat interface
-
-## Development
-
-### Local Development
-For local development, simply run:
+### **A. RAGAS Evaluation (OpenAI, for benchmarking)**
 ```bash
-python main.py
+python evaluation.py
 ```
+- Evaluates RAG pipeline using RAGAS metrics (faithfulness, answer relevancy, context precision, context recall)
+- Requires `OPENAI_API_KEY` in `.env`
 
-### Testing
-You can test the RAG functionality directly:
-```python
-from app.core import get_response
-response = get_response("What is the main topic of your documents?")
-print(response)
+### **B. Gemini-based Evaluation (Indonesian prompts, LLM-as-a-judge)**
+```bash
+python gemini_evaluation.py
 ```
+- Uses Google Gemini to evaluate RAG answers with custom Indonesian prompts
+- Results saved as CSV and Excel
 
-## CSV Processing Details
-
-CSV files are processed with the following features:
-- **Row-by-row processing**: Each row becomes a separate document chunk
-- **Column-value format**: Data is converted to "column: value" text format
-- **Metadata tracking**: Includes source file and row number information
-- **Empty value handling**: Skips NaN or empty values
-- **Searchable content**: All CSV data becomes searchable through the RAG system
-
-**Example CSV input:**
-```csv
-Name,Age,Department
-John Doe,30,Engineering
-Jane Smith,28,Marketing
+### **C. Ollama-based Evaluation (Local LLM, LLM-as-a-judge)**
+```bash
+python ollama_evaluation.py
 ```
+- Uses a local LLM (default: `deepseek-r1:8b`, can be changed) via Ollama
+- Interactive: choose to evaluate all or a sample of questions
+- Results saved as CSV and Excel (multi-sheet, formatted)
+- Progress updates every 10 questions
 
-**Becomes searchable as:**
-```
-Name: John Doe
-Age: 30
-Department: Engineering
-```
+#### **Change Ollama Model**
+Edit the `model_name` variable in `ollama_evaluation.py` (e.g., `deepseek-r1:8b`, `llama3.2:3b`, `mistral:7b`)
+
+#### **Excel Output**
+- Results are saved as `ollama_evaluation_results_YYYYMMDD_HHMMSS.xlsx` in the project root
+- Includes summary, detailed results, and explanations
+
+---
+
+## Security & Best Practices
+
+- **Never commit your `.env` file or secret keys**
+- `.gitignore` is set up to ignore secrets, data, and generated files
+- Use a separate environment for development and production
+- Regularly update dependencies
+
+---
 
 ## Troubleshooting
 
-### Common Issues
+- **Ollama timeout or memory errors:**
+  - Use a smaller model (e.g., `llama3.2:3b`)
+  - Increase timeout in `ollama_evaluation.py` if needed
+  - Ensure your machine has enough RAM/CPU
+- **Vector store not found:**
+  - Run `python ingest.py` to create the vector store
+- **API key errors:**
+  - Check your `.env` file for correct keys
+- **Evaluation script errors:**
+  - Ensure all dependencies are installed (`pip install -r requirements.txt openpyxl`)
+  - Check for error messages in the terminal
 
-1. **Vector store not found:**
-   - Run `python ingest.py` to create the vector store
-   - Ensure documents are in the `documents/` folder
-
-2. **Google API key error:**
-   - Verify your API key in the `.env` file
-   - Check if the key has proper permissions
-
-3. **CSV processing errors:**
-   - Ensure CSV files are properly formatted
-   - Check for encoding issues (UTF-8 recommended)
-   - Verify pandas is installed: `pip install pandas`
-
-## Security Considerations
-
-- Keep your API keys secure and never commit them to version control
-- Use HTTPS in production
-- Regularly update dependencies
+---
 
 ## License
 
 This project is licensed under the MIT License.
+
+---
 
 ## Contributing
 
@@ -193,42 +182,8 @@ This project is licensed under the MIT License.
 4. Add tests if applicable
 5. Submit a pull request
 
-## Customer Service Teknik Informatika UIN Jakarta
+---
 
-Chatbot AI ini dirancang khusus untuk Customer Service Program Studi Teknik Informatika UIN Syarif Hidayatullah Jakarta.
+## About
 
-### Layanan yang Tersedia:
-- 📚 Informasi kurikulum dan mata kuliah
-- 🎓 Panduan akademik dan administrasi  
-- 👨‍🏫 Informasi dosen dan jadwal
-- 📝 Bantuan pendaftaran dan registrasi
-- 📋 Panduan PKL dan skripsi
-
-### Akses Melalui:
-
-#### Web Chat Interface
-- Buka browser dan akses: `http://localhost:5000/chat`
-- Antarmuka web yang responsif dan mudah diakses dari perangkat apa pun
-- Desain modern mirip ChatGPT/DeepSeek
-
-### Contoh Pertanyaan:
-- "Bagaimana struktur kurikulum semester 1?"
-- "Siapa saja dosen pengajar mata kuliah [nama mata kuliah]?"
-- "Bagaimana prosedur pendaftaran PKL?"
-- "Apa saja persyaratan untuk skripsi?"
-- "Informasi tentang mata kuliah pilihan"
-
-## 🚀 Deployment on Render (Free Tier)
-
-1. **Create a Render.com account** (https://render.com/)
-2. **Create a new Web Service** and connect your GitHub repo.
-3. **Set environment variables** in the Render dashboard:
-   - `SECRET_KEY` (any random string)
-   - `DATABASE_URL` (default: `sqlite:///app.db`)
-   - `GOOGLE_API_KEY`, etc. (as needed for your LLM/embedding)
-4. **Build Command:** `pip install -r requirements.txt`
-5. **Start Command:** `python main_whatsapp.py`
-6. **Persistent Disk:** Enable if you want to keep uploaded files and vector DB.
-7. **Access your app** via the provided Render URL.
-
-**Note:** For production, consider using PostgreSQL (Render offers a free tier) and update `DATABASE_URL` accordingly. 
+This chatbot is designed for the Pusat Pengembangan Bahasa (PPB) UIN Syarif Hidayatullah Jakarta, with support for Indonesian language, local document retrieval, and advanced evaluation workflows for RAG systems. 
