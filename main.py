@@ -51,7 +51,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route('/health', methods=['GET'])
+@app.route('/api/health', methods=['GET'])
 def health_check():
     """
     Health check endpoint for monitoring.
@@ -64,25 +64,14 @@ def home():
     Home endpoint with basic information.
     """
     return """
-    <h1>🎓 Customer Service Teknik Informatika UIN Jakarta</h1>
-    <p>Ini adalah chatbot AI Customer Service untuk Program Studi Teknik Informatika UIN Syarif Hidayatullah Jakarta.</p>
-    <p>Bot ini dapat menjawab pertanyaan dalam Bahasa Indonesia berdasarkan dokumen akademik yang tersedia.</p>
-    
-    <h3>Layanan yang Tersedia:</h3>
-    <ul>
-        <li>✅ Informasi kurikulum dan mata kuliah</li>
-        <li>✅ Panduan akademik dan administrasi</li>
-        <li>✅ Informasi dosen dan jadwal</li>
-        <li>✅ Bantuan pendaftaran dan registrasi</li>
-        <li>✅ Panduan PKL dan skripsi</li>
-    </ul>
+    <h1>🎓 Virtual Assistant Pusat Pengembangan Bahasa UIN Jakarta</h1>
+    <p>Ini adalah chatbot AI Virtual Assistant untuk Pusat Pengembangan Bahasa UIN Syarif Hidayatullah Jakarta.</p>
+    <p>Chatbot AI ini dapat menjawab pertanyaan dalam Bahasa Indonesia berdasarkan dokumen yang tersedia.</p>
     
     <h3>Akses:</h3>
     <ul>
         <li><a href="/chat">💬 Web Chat Interface</a></li>
-        <li><code>/whatsapp</code> (WhatsApp)</li>
-        <li><code>/webhook</code> (alternative)</li>
-        <li><code>/health</code> (health check)</li>
+        <li><code>/api/health</code> (health check)</li>
     </ul>
     
     <p><strong>Status:</strong> <span style="color: green;">🟢 Online</span></p>
@@ -155,7 +144,7 @@ def admin_login():
     return render_template('admin_login.html')
 
 # Admin logout
-@app.route('/admin/logout', methods=['GET', 'POST'])
+@app.route('/api/admin/logout', methods=['GET', 'POST'])
 @login_required
 def admin_logout():
     logout_user()
@@ -207,7 +196,7 @@ def admin_dashboard():
     return render_template('admin_dashboard.html', user=current_user, files=files)
 
 # Delete file
-@app.route('/admin/delete/<int:file_id>', methods=['POST'])
+@app.route('/api/admin/delete/<int:file_id>', methods=['POST'])
 @login_required
 def delete_file(file_id):
     kb_file = KnowledgeBaseFile.query.get(file_id)
@@ -230,7 +219,7 @@ def delete_file(file_id):
     return redirect('/admin')
 
 # Placeholder for embedding and progress
-@app.route('/admin/embed', methods=['POST'])
+@app.route('/api/admin/embed', methods=['POST'])
 @login_required
 def embed_files():
     from app.core import start_embedding
@@ -242,7 +231,7 @@ def embed_files():
     files = get_file_status()
     return render_template('admin_dashboard.html', user=current_user, files=files, message=msg)
 
-@app.route('/admin/embed_all', methods=['POST'])
+@app.route('/api/admin/embed_all', methods=['POST'])
 @login_required
 def embed_all_files():
     from app.core import start_embedding
@@ -254,7 +243,7 @@ def embed_all_files():
     files = get_file_status()
     return render_template('admin_dashboard.html', user=current_user, files=files, message=msg)
 
-@app.route('/admin/embed_progress')
+@app.route('/api/admin/embed_progress')
 @login_required
 def embed_progress():
     return jsonify(get_embedding_progress())
@@ -283,7 +272,7 @@ def api_files():
     ]
     return jsonify({'files': file_list})
 
-@app.route('/api/v1/preview-chunking', methods=['POST'])
+@app.route('/api/preview-chunking', methods=['POST'])
 def preview_chunking():
     print('[PREVIEW] Endpoint called')
     print(f'[PREVIEW] Request method: {request.method}')

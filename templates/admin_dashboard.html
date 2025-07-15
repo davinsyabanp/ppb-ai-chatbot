@@ -94,7 +94,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark mb-4">
     <div class="container">
         <a class="navbar-brand" href="#">Admin Dashboard - PPB UIN Jakarta</a>
-        <form method="post" action="/admin/logout" style="display:inline;">
+        <form method="post" action="/api/admin/logout" style="display:inline;">
             <button type="submit" class="btn btn-outline-danger">Logout</button>
         </form>
     </div>
@@ -183,10 +183,10 @@
         <div class="card-body p-4">
             <h5 class="card-title">Embedding & Reprocessing</h5>
             <div class="d-flex gap-2">
-                <form method="post" action="/admin/embed" style="display:inline;">
+                <form method="post" action="/api/admin/embed" style="display:inline;">
                     <button class="btn btn-success" type="submit" id="embed-btn">Re-embed Changed Files</button>
                 </form>
-                <form method="post" action="/admin/embed_all" style="display:inline;">
+                <form method="post" action="/api/admin/embed_all" style="display:inline;">
                     <button class="btn btn-secondary" type="submit">Force Re-embed All Files</button>
                 </form>
             </div>
@@ -228,7 +228,7 @@
 <script>
     // All existing JS logic remains unchanged
     function pollEmbedProgress() {
-        fetch('/admin/embed_progress')
+        fetch('/api/admin/embed_progress')
             .then(response => response.json())
             .then(data => {
                 const container = document.getElementById('embed-progress-container');
@@ -251,7 +251,7 @@
             });
     }
     document.getElementById('embed-btn').addEventListener('click', function() { setTimeout(pollEmbedProgress, 500); });
-    document.querySelector('form[action="/admin/embed_all"]').addEventListener('submit', function() { setTimeout(pollEmbedProgress, 500); });
+    document.querySelector('form[action="/api/admin/embed_all"]').addEventListener('submit', function() { setTimeout(pollEmbedProgress, 500); });
     pollEmbedProgress();
     function showToast(message, type = 'success') {
         const toastId = 'toast-' + Date.now();
@@ -275,7 +275,7 @@
             const fileName = button.getAttribute('data-file-name');
             document.getElementById('modal-file-name').textContent = fileName;
             const form = document.getElementById('delete-form');
-            form.action = `/admin/delete/${fileId}`;
+            form.action = `/api/admin/delete/${fileId}`;
         });
     }
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
@@ -296,7 +296,7 @@
             const formData = new FormData(uploadForm);
             previewBtn.disabled = true;
             previewBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
-            fetch('/api/v1/preview-chunking', { method: 'POST', body: formData })
+            fetch('/api/preview-chunking', { method: 'POST', body: formData })
             .then(res => res.json())
             .then(data => {
                 previewBtn.disabled = false;
