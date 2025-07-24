@@ -1,6 +1,6 @@
 # RAG Chatbot AI (PPB UIN Jakarta)
 
-A Retrieval-Augmented Generation (RAG) chatbot that answers questions based on local documents, accessible via a web chat interface. Supports Google Gemini, local LLMs via Ollama, and advanced evaluation with RAGAS or custom LLM metrics.
+A Retrieval-Augmented Generation (RAG) chatbot that answers questions based on local documents, accessible via a web admin dashboard and chat interface. Supports Google Gemini, local LLMs via Ollama, and advanced evaluation with RAGAS or custom LLM metrics.
 
 ---
 
@@ -12,14 +12,19 @@ A Retrieval-Augmented Generation (RAG) chatbot that answers questions based on l
 - 📚 **FAISS vector store** for efficient document retrieval
 - 📄 **Multi-format support** (PDF, TXT, CSV documents)
 - 📊 **CSV processing** with row-by-row conversion for structured data
+- 🛡️ **Admin dashboard** for file upload, chunk preview, embedding, and vector DB management
+- 🧩 **Chunk preview** before embedding
+- 🗑️ **Vector DB management** (delete, re-embed)
 - 📈 **Evaluation scripts**: RAGAS (OpenAI), Gemini, and Ollama (local)
 - 🛡️ **Langsmith monitoring** and tracing support
+- 🎨 **Modern UI** with Tailwind CSS
 
 ---
 
 ## Prerequisites
 
 - **Python 3.8+**
+- **Node.js & npm** (for Tailwind CSS build)
 - **Nomic API key** (for embeddings)
 - **Google API key** (for Gemini, if used)
 - **Ollama** (for local LLMs, e.g., llama3, deepseek, mistral, etc.)
@@ -36,28 +41,22 @@ A Retrieval-Augmented Generation (RAG) chatbot that answers questions based on l
    cd Chatbot\ AI\ All\ Using\ API\ Ver\ 1.1.0
    ```
 
-2. **Install dependencies:**
+2. **Install Python dependencies:**
    ```bash
    pip install -r requirements.txt
    pip install openpyxl
    ```
 
-3. **Configure environment variables:**
+3. **Install Node.js dependencies (for Tailwind CSS):**
+   ```bash
+   npm install
+   ```
+
+4. **Configure environment variables:**
    ```bash
    cp env.example .env
    ```
-   Edit `.env` with your credentials:
-   ```env
-   GOOGLE_API_KEY="your_google_api_key_here"
-   NOMIC_API_KEY="your_nomic_api_key_here"
-   # For Langsmith monitoring
-   LANGCHAIN_TRACING_V2="true"
-   LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
-   LANGCHAIN_API_KEY="YOUR_LANGSMITH_API_KEY"
-   LANGCHAIN_PROJECT="Chatbot PPB"
-   # For OpenAI (if using RAGAS)
-   OPENAI_API_KEY="your_openai_api_key_here"
-   ```
+   Edit `.env` with your credentials (see `env.example` for all options).
 
 ---
 
@@ -72,15 +71,21 @@ Chatbot AI All Using API Ver 1.1.0/
 │   └── vector_store.py    # FAISS vector store operations
 ├── documents/             # Source documents folder (PDF, CSV, etc.)
 ├── vector_db/             # FAISS index and vector store
-├── main.py                # Flask web server
+├── main.py                # Flask web server (admin dashboard, API)
 ├── ingest.py              # Document processing script
 ├── evaluation.py          # RAGAS/OpenAI evaluation script
 ├── gemini_evaluation.py   # Gemini-based evaluation script
 ├── ollama_evaluation.py   # Ollama-based (local LLM) evaluation script
 ├── requirements.txt       # Python dependencies
 ├── env.example            # Environment variables template
-├── .env                   # Your environment variables (not tracked)
-├── .gitignore             # Ignore patterns for secrets, data, etc.
+├── package.json           # Node.js scripts and dependencies
+├── tailwind.config.js     # Tailwind CSS config
+├── src/input.css          # Tailwind CSS input
+├── static/css/output.css  # Tailwind CSS output (auto-generated)
+├── static/images/         # UI images (e.g., logo)
+├── templates/             # HTML templates (admin, chat, login)
+├── build_css.py           # Python script to build Tailwind CSS
+├── .gitignore             # Git ignore rules
 └── README.md              # This file
 ```
 
@@ -91,7 +96,19 @@ Chatbot AI All Using API Ver 1.1.0/
 ### 1. Add Documents
 Place your source documents (PDF, TXT, CSV) in the `documents/` folder.
 
-### 2. Create Vector Store
+### 2. Build Tailwind CSS (for UI)
+You can use either npm or Python:
+- **With npm:**
+  ```bash
+  npm run build-prod
+  ```
+- **With Python:**
+  ```bash
+  python build_css.py
+  ```
+This generates `static/css/output.css` for the web UI.
+
+### 3. Create Vector Store
 ```bash
 python ingest.py
 ```
@@ -101,11 +118,24 @@ This will:
 - Create embeddings using Nomic
 - Save the FAISS vector store to `vector_db/`
 
-### 3. Start the Flask Server
+### 4. Start the Flask Server
 ```bash
 python main.py
 ```
 The server will start on `http://localhost:5000`
+
+---
+
+## Admin Dashboard
+
+- **URL:** `/admin`
+- **Features:**
+  - Upload documents (PDF, TXT, CSV)
+  - Preview chunking before embedding
+  - Embed all files to vector DB
+  - Delete individual files (removes from DB and disk)
+  - Delete all vector DB contents (enables re-embedding)
+  - View file status and embedding progress
 
 ---
 
@@ -141,6 +171,31 @@ Edit the `model_name` variable in `ollama_evaluation.py` (e.g., `deepseek-r1:8b`
 - Results are saved as `ollama_evaluation_results_YYYYMMDD_HHMMSS.xlsx` in the project root
 - Includes summary, detailed results, and explanations
 
+### D. RAGAS Evaluation with Vertex AI (Google Cloud LLM-as-a-judge)
+
+See `env.example` for required GCP environment variables.
+
+---
+
+## Environment Variables
+
+See `env.example` for all required and optional variables, including:
+- `GOOGLE_API_KEY`
+- `NOMIC_API_KEY`
+- `JINA_API_KEY`
+- `LANGCHAIN_*` (for Langsmith tracing)
+- `OPENAI_API_KEY` 
+- `GCP_PROJECT_ID`, `GCP_REGION` (for Vertex AI evaluation)
+
+---
+
+## Frontend Build (Tailwind CSS)
+
+- **Input:** `src/input.css`
+- **Output:** `static/css/output.css`
+- **Config:** `tailwind.config.js`
+- **Build:** `npm run build-prod` or `python build_css.py`
+
 ---
 
 ## Security & Best Practices
@@ -165,6 +220,9 @@ Edit the `model_name` variable in `ollama_evaluation.py` (e.g., `deepseek-r1:8b`
 - **Evaluation script errors:**
   - Ensure all dependencies are installed (`pip install -r requirements.txt openpyxl`)
   - Check for error messages in the terminal
+- **Tailwind CSS build errors:**
+  - Ensure Node.js and npm are installed
+  - Run `npm install` before building CSS
 
 ---
 
@@ -186,4 +244,6 @@ This project is licensed under the MIT License.
 
 ## About
 
-This chatbot is designed for the Pusat Pengembangan Bahasa (PPB) UIN Syarif Hidayatullah Jakarta, with support for Indonesian language, local document retrieval, and advanced evaluation workflows for RAG systems. 
+This chatbot is designed for the Pusat Pengembangan Bahasa (PPB) UIN Syarif Hidayatullah Jakarta, with support for Indonesian language, local document retrieval, and advanced evaluation workflows for RAG systems.
+
+--- 

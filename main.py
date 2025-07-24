@@ -48,7 +48,10 @@ ALLOWED_EXTENSIONS = {'pdf', 'txt', 'csv'}
 
 # Helper to check allowed file
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return (
+        '.' in filename
+        and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    )
 
 
 @app.route('/api/health', methods=['GET'])
@@ -56,7 +59,11 @@ def health_check():
     """
     Health check endpoint for monitoring.
     """
-    return {"status": "healthy", "message": "RAG chatbot AI is running", "language": "Indonesian"}
+    return {
+        "status": "healthy",
+        "message": "RAG chatbot AI is running",
+        "language": "Indonesian"
+    }
 
 @app.route('/', methods=['GET'])
 def home():
@@ -161,11 +168,20 @@ def admin_dashboard():
         # Handle file upload
         if 'file' not in request.files:
             print('No file part in request.files')
-            return render_template('admin_dashboard.html', user=current_user, files=files, error='No file part')
+            return render_template(
+                'admin_dashboard.html',
+                user=current_user,
+                files=files,
+                error='No file part'
+            )
         file = request.files['file']
         if file.filename == '':
             print('No selected file')
-            return render_template('admin_dashboard.html', user=current_user, files=files, error='No selected file')
+            return render_template(
+                'admin_dashboard.html',
+                user=current_user,
+                files=files,
+                error='No selected file')
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -178,20 +194,39 @@ def admin_dashboard():
             existing = KnowledgeBaseFile.query.filter_by(filehash=filehash).first()
             if existing:
                 print('File already exists')
-                return render_template('admin_dashboard.html', user=current_user, files=files, error='File already exists')
+                return render_template(
+                    'admin_dashboard.html',
+                    user=current_user,
+                    files=files,
+                    error='File already exists')
             # Get chunking params from form
             chunk_size = int(request.form.get('chunk_size', 2000))
             chunk_overlap = int(request.form.get('chunk_overlap', 400))
             # Optionally: store these in the DB or pass to embedding logic
-            kb_file = KnowledgeBaseFile(filename=filename, filetype=filetype, filepath=filepath, filehash=filehash)
+            kb_file = KnowledgeBaseFile(
+                filename=filename,
+                filetype=filetype,
+                filepath=filepath,
+                filehash=filehash
+            )
             db.session.add(kb_file)
             db.session.commit()
             print(f'File uploaded successfully with chunk_size={chunk_size}, chunk_overlap={chunk_overlap}')
             files = get_file_status()
-            return render_template('admin_dashboard.html', user=current_user, files=files, message='File uploaded!')
+            return render_template(
+                'admin_dashboard.html',
+                user=current_user,
+                files=files,
+                message='File uploaded!'
+            )
         else:
             print('Invalid file type')
-            return render_template('admin_dashboard.html', user=current_user, files=files, error='Invalid file type')
+            return render_template(
+                'admin_dashboard.html',
+                user=current_user,
+                files=files,
+                error='Invalid file type'
+            )
     # GET: show dashboard
     return render_template('admin_dashboard.html', user=current_user, files=files)
 
@@ -199,24 +234,40 @@ def admin_dashboard():
 @app.route('/api/admin/delete/<int:file_id>', methods=['POST'])
 @login_required
 def delete_file(file_id):
-    kb_file = KnowledgeBaseFile.query.get(file_id)
+    kb_file = db.session.get(KnowledgeBaseFile, file_id)
     if not kb_file:
-        flash('File not found or already deleted.', 'warning')
-        return redirect('/admin')
+        if request.headers.get("Content-Type") == "application/json":
+            return (
+                jsonify(
+                    {"success": False, "error": "File not found or already deleted."}
+                ),
+                404,
+            )
+        flash("File not found or already deleted.", "warning")
+        return redirect("/admin")
+
     try:
-        os.remove(kb_file.filepath)
+        if os.path.exists(kb_file.filepath):
+            os.remove(kb_file.filepath)
     except Exception:
         pass
+
     db.session.delete(kb_file)
     db.session.commit()
+
     # After deleting, check if there are any files left
     if KnowledgeBaseFile.query.count() == 0:
         import shutil
+
         vector_db_path = os.path.join("vector_db", "faiss_index")
         if os.path.exists(vector_db_path):
             shutil.rmtree(vector_db_path)
-    flash('File deleted!', 'success')
-    return redirect('/admin')
+
+    if request.headers.get("Content-Type") == "application/json":
+        return jsonify({"success": True, "message": "File deleted successfully!"})
+
+    flash("File deleted!", "success")
+    return redirect("/admin")
 
 # Placeholder for embedding and progress
 @app.route('/api/admin/embed', methods=['POST'])
@@ -229,7 +280,12 @@ def embed_files():
     else:
         msg = 'Embedding is already running.'
     files = get_file_status()
-    return render_template('admin_dashboard.html', user=current_user, files=files, message=msg)
+    return render_template(
+        'admin_dashboard.html',
+        user=current_user,
+        files=files,
+        message=msg
+    )
 
 @app.route('/api/admin/embed_all', methods=['POST'])
 @login_required
@@ -241,7 +297,12 @@ def embed_all_files():
     else:
         msg = 'Embedding is already running.'
     files = get_file_status()
-    return render_template('admin_dashboard.html', user=current_user, files=files, message=msg)
+    return render_template(
+        'admin_dashboard.html',
+        user=current_user,
+        files=files,
+        message=msg
+    )
 
 @app.route('/api/admin/embed_progress')
 @login_required
@@ -253,22 +314,32 @@ def api_chat():
     data = request.get_json()
     message = data.get('message', '').strip()
     user_id = data.get('user_id', request.remote_addr)
+    conversation_has_started = data.get("conversationHasStarted", False)
+    is_initial_greeting_sent = data.get("isInitialGreetingSent", False)
+
     if not message:
         return jsonify({'error': 'No message provided'}), 400
-    response = get_response(message, user_id)
+
+    response = get_response(
+        message,
+        user_id,
+        conversation_has_started,
+        is_initial_greeting_sent
+    )
     return jsonify({'response': response})
 
 @app.route('/api/files', methods=['GET'])
 def api_files():
-    files = KnowledgeBaseFile.query.all()
+    files = get_file_status()
     file_list = [
         {
-            'id': f.id,
-            'filename': f.filename,
-            'filetype': f.filetype,
-            'uploaded_at': f.uploaded_at.strftime('%Y-%m-%d %H:%M'),
-            'filepath': f.filepath
-        } for f in files
+            "id": f["id"],
+            "filename": f["filename"],
+            "filetype": f["filetype"],
+            "uploaded_at": f["uploaded_at"],
+            "changed": f["changed"],
+        }
+        for f in files
     ]
     return jsonify({'files': file_list})
 
@@ -285,13 +356,25 @@ def preview_chunking():
         file.seek(0)  # Reset file pointer after reading
     else:
         print('[PREVIEW] No file in request.files')
-        return jsonify({'success': False, 'error': 'No file uploaded'}), 400
+        return jsonify(
+            {
+                'success': False,
+                'error': 'No file uploaded'
+            }
+        ), 400
     
     chunk_size = int(request.form.get('chunk_size', 1000))
     chunk_overlap = int(request.form.get('chunk_overlap', 200))
     print(f"[PREVIEW] Received file: {file.filename if file else None}, chunk_size={chunk_size}, chunk_overlap={chunk_overlap}")
     
     filename = file.filename
+    if not filename:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Uploaded file has no name."
+            }
+        ), 400
     filetype = filename.rsplit('.', 1)[-1].lower()
     print(f'[PREVIEW] File type detected: {filetype}')
     preview_docs = []
@@ -389,6 +472,36 @@ def preview_chunking():
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': f'An unexpected error occurred during preview: {str(e)}'}), 500
+
+@app.route("/api/kb_status", methods=["GET"])
+def kb_status():
+    index_path = os.path.join("vector_db", "faiss_index")
+    if os.path.exists(index_path):
+        return jsonify({"status": "active"})
+    else:
+        return jsonify({"status": "requires_embedding"})
+
+@app.route("/api/admin/delete_vector_db", methods=["POST"])
+@login_required
+def delete_vector_db():
+    import shutil
+    vector_db_dir = os.path.abspath("vector_db")
+    try:
+        if os.path.exists(vector_db_dir):
+            # Remove all contents inside vector_db
+            for filename in os.listdir(vector_db_dir):
+                file_path = os.path.join(vector_db_dir, filename)
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+        else:
+            os.makedirs(vector_db_dir, exist_ok=True)
+        msg = "Vector DB deleted successfully."
+    except Exception as e:
+        msg = f"Failed to delete Vector DB: {str(e)}"
+    files = get_file_status()
+    return render_template("admin_dashboard.html", user=current_user, files=files, message=msg)
 
 if __name__ == "__main__":
     # Get port from environment or default to 5000

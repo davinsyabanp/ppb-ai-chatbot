@@ -126,7 +126,7 @@ def format_bot_response(answer: str) -> str:
     return answer
 
 
-def get_response(query: str, user_id: Optional[str] = None) -> str:
+def get_response(query: str, user_id: Optional[str] = None, conversation_has_started: bool = False, is_initial_greeting_sent: bool = False) -> str:
     """
     Get a response from the RAG chain for a given query, with robust follow-up logic for elaboration requests.
     Args:
@@ -156,24 +156,24 @@ def get_response(query: str, user_id: Optional[str] = None) -> str:
             )
 
         # Check if this is a new user
-        if user_id and is_new_user(user_id):
-            mark_user_as_known(user_id)
-            return format_bot_response(
-                """Selamat datang di Asisten Virtual Pusat Pengembangan Bahasa (PPB) UIN Syarif Hidayatullah Jakarta! 🎓
+#         if user_id and is_new_user(user_id):
+#             mark_user_as_known(user_id)
+#             return format_bot_response(
+#                 """Selamat datang di Asisten Virtual Pusat Pengembangan Bahasa (PPB) UIN Syarif Hidayatullah Jakarta! 🎓
 
-Saya adalah asisten AI yang siap membantu Anda dengan informasi seputar layanan di Pusat Pengembangan Bahasa (PPB) UIN Syarif Hidayatullah Jakarta.
+# Saya adalah asisten AI yang siap membantu Anda dengan informasi seputar layanan di Pusat Pengembangan Bahasa (PPB) UIN Syarif Hidayatullah Jakarta.
 
-*Layanan yang tersedia:*
-• Informasi jadwal dan pendaftaran tes TOAFL/TOEFL
-• Kursus bahasa (Inggris, Arab, dll)
-• Layanan penerjemahan dan proofreading
-• Informasi biaya, lokasi, dan kontak PPB
-• Frequently Asked Questions (FAQ)
+# *Layanan yang tersedia:*
+# • Informasi jadwal dan pendaftaran tes TOAFL/TOEFL
+# • Kursus bahasa (Inggris, Arab, dll)
+# • Layanan penerjemahan dan proofreading
+# • Informasi biaya, lokasi, dan kontak PPB
+# • Frequently Asked Questions (FAQ)
 
-*Catatan:* Saya akan memberikan jawaban berdasarkan dokumen resmi PPB UIN Jakarta. Untuk informasi yang lebih spesifik, silakan hubungi langsung administrasi PPB.
+# *Catatan:* Saya akan memberikan jawaban berdasarkan dokumen resmi PPB UIN Jakarta. Untuk informasi yang lebih spesifik, silakan hubungi langsung administrasi PPB.
 
-Silakan ajukan pertanyaan Anda! 😊"""
-            )
+# Silakan ajukan pertanyaan Anda! 😊"""
+#             )
         
         # Robust follow-up trigger detection
         followup_triggers = [

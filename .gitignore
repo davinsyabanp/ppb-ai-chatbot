@@ -1,19 +1,19 @@
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
 *.so
+*.egg
+*.egg-info/
+dist/
+build/
 
-# Virtual environments
+# Virtual environment
 venv/
-ENV/
-.env/
-.venv/
-
-# Environment variables and secrets
 .env
 .env.*
+
+# VSCode
+.vscode/
 
 # Database files
 *.faiss
@@ -22,35 +22,26 @@ ENV/
 *.sqlite3
 documents/
 
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints
+# Node.js
+node_modules/
+package-lock.json
 
-# VSCode and IDE settings
-.vscode/
-.idea/
-*.sublime-workspace
-*.sublime-project
+# Output files and evaluation results
+*.csv
+*.log
+*.xlsx
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
+# Static and build artifacts
+static/css/output.css
+static/css/*.css
+static/images/*.png
 
-# Evaluation and generated data
-*.csv
-*.xlsx
-ragas_evaluation_dataset.csv
-ollama_evaluation_results*.xlsx
-ollama_evaluation_results.csv
-ollama_evaluation_summary.csv
-gemini_evaluation_results.csv
-gemini_evaluation_summary.csv
+# Tailwind and frontend build
+src/*.css
+build_css.py
 
-# Ollama and model cache
-ollama_cache/
-
-# Misc
-*.bak
-*.tmp
+tailwind.config.js
