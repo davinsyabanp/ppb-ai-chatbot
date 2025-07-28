@@ -1,21 +1,22 @@
 # RAG Chatbot AI (PPB UIN Jakarta)
 
-A Retrieval-Augmented Generation (RAG) chatbot that answers questions based on local documents, accessible via a web admin dashboard and chat interface. Supports Google Gemini, local LLMs via Ollama, and advanced evaluation with RAGAS or custom LLM metrics.
+A Retrieval-Augmented Generation (RAG) chatbot that answers questions based on local documents, accessible via a web admin dashboard and chat interface. Supports Google Gemini, local LLMs via Ollama, and advanced evaluation with RAGAS or custom LLM with RAGAS metrics.
 
 ---
 
 ## Features
 
 - 🤖 **RAG-powered responses** based on local document knowledge base
-- 🧠 **Google Gemini** and **Ollama (local LLMs)** for text generation
-- 🔍 **Local embeddings** using Nomic Atlas
+- 🧠 **Google Gemini** for text generation
+- 🔍 **Nomic Embedding** for text embedding
+- 🏆 **Jina Reranker** for re-rank the retrieved documents
 - 📚 **FAISS vector store** for efficient document retrieval
 - 📄 **Multi-format support** (PDF, TXT, CSV documents)
 - 📊 **CSV processing** with row-by-row conversion for structured data
 - 🛡️ **Admin dashboard** for file upload, chunk preview, embedding, and vector DB management
 - 🧩 **Chunk preview** before embedding
 - 🗑️ **Vector DB management** (delete, re-embed)
-- 📈 **Evaluation scripts**: RAGAS (OpenAI), Gemini, and Ollama (local)
+- 📈 **Evaluation scripts**: RAGAS with Ollama (local)
 - 🛡️ **Langsmith monitoring** and tracing support
 - 🎨 **Modern UI** with Tailwind CSS
 
@@ -26,8 +27,8 @@ A Retrieval-Augmented Generation (RAG) chatbot that answers questions based on l
 - **Python 3.8+**
 - **Node.js & npm** (for Tailwind CSS build)
 - **Nomic API key** (for embeddings)
-- **Google API key** (for Gemini, if used)
-- **Ollama** (for local LLMs, e.g., llama3, deepseek, mistral, etc.)
+- **Google API key** (for text generation)
+- **Ollama** (for RAGAS local evaluation)
 - **openpyxl** (for Excel evaluation output)
 - (Optional) **OpenAI API key** (for RAGAS evaluation)
 
@@ -38,7 +39,7 @@ A Retrieval-Augmented Generation (RAG) chatbot that answers questions based on l
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd Chatbot\ AI\ All\ Using\ API\ Ver\ 1.1.0
+   cd ppb-ai-chatbot
    ```
 
 2. **Install Python dependencies:**
