@@ -2,177 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI Chatbot - Pusat Pengembangan Bahasa UIN Jakarta</title>
+    <title>PPBOT - Pusat Pengembangan Bahasa UIN Jakarta</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/output.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            background-color: #f0f4f8; /* Latar belakang abu-abu muda */
-            font-family: 'Poppins', sans-serif;
-        }
-        .chat-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            background-color: #003366; /* Biru Tua UIN */
-            color: #fff;
-            padding: 1rem;
-            text-align: center;
-            font-weight: 600;
-            font-size: 1.2rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            z-index: 10;
-        }
-        .chat-logo {
-            height: 40px;
-            width: auto;
-            margin-right: 10px;
-        }
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            max-width: 800px;
-            width: 100%;
-            margin: 0 auto;
-            overflow: hidden;
-        }
-        .messages {
-            flex: 1;
-            padding: 2rem 1.5rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .message-row {
-            display: flex;
-            gap: 10px;
-            max-width: 85%;
-        }
-        .message-row.user {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-        .message-content {
-            padding: 12px 18px;
-            border-radius: 18px;
-            line-height: 1.6;
-            word-wrap: break-word;
-        }
-        .message-row.user .message-content {
-            background-color: #003366; /* Biru Tua UIN */
-            color: #fff;
-            border-bottom-right-radius: 4px;
-        }
-        .message-row.bot .message-content {
-            background-color: #fff;
-            color: #343a40;
-            border: 1px solid #e9ecef;
-            border-bottom-left-radius: 4px;
-        }
-        .message-meta {
-            align-self: flex-end;
-            font-size: 0.75rem;
-            color: #6c757d;
-        }
-        .chat-input-row {
-            padding: 1rem 1.5rem;
-            background: #fff;
-            border-top: 1px solid #dee2e6;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
-        }
-        .chat-input-inner {
-            max-width: 800px;
-            margin: 0 auto;
-            display: flex;
-            gap: 10px;
-        }
-        .chat-input {
-            flex: 1;
-            border: 1px solid #ced4da;
-            border-radius: 25px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .chat-input:focus {
-            border-color: #d4af37; /* Emas UIN */
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
-        }
-        .chat-send-btn {
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            background-color: #003366; /* Biru Tua UIN */
-            color: #fff;
-            border: none;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s;
-        }
-        .chat-send-btn:hover {
-            background-color: #002244; /* Biru lebih gelap */
-        }
-        .app-footer {
-            text-align: center;
-            padding: 10px 0;
-            font-size: 0.8rem;
-            color: #6c757d;
-            background-color: #fff;
-            border-top: 1px solid #e9ecef;
-        }
-    </style>
 </head>
-<body>
-    <header class="chat-header">
-        <img src="/static/images/PPBOT_Logo.png" alt="PPB Logo" class="chat-logo">
-        Chatbot Pusat Pengembangan Bahasa UIN Jakarta
-    </header>
-    <div class="chat-container">
-        <div class="messages" id="chat-messages">
-             <div class="message-row bot">
-                <div class="message-content">
-                    Selamat datang! Saya adalah asisten AI dari Pusat Pengembangan Bahasa. Ada yang bisa saya bantu?
+<body class="bg-gray-100 min-h-screen font-poppins flex items-center justify-center p-4">
+    <!-- Main Chat Container -->
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl h-[600px] flex flex-col">
+        <!-- Header -->
+        <div class="bg-slate-800 text-white p-4 rounded-t-xl flex items-center">
+            <!-- Logo avatar on the left -->
+            <div class="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center overflow-hidden mr-4">
+                <img src="/static/images/PPBOT_Logo.png" alt="PPBOT Logo" class="w-full h-full object-cover">
+            </div>
+            <!-- Title and status -->
+            <div class="flex flex-col flex-1">
+                <h1 class="text-lg font-semibold">PPBOT</h1>
+                <div class="flex items-center gap-2 mt-1">
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span class="text-sm text-gray-300">Online</span>
                 </div>
             </div>
         </div>
-        <form class="chat-input-row" id="chat-form" autocomplete="off">
-            <div class="chat-input-inner">
-                <input type="text" class="chat-input" id="chat-input" placeholder="Ketik pertanyaan Anda di sini..." required autofocus>
-                <button class="chat-send-btn" type="submit" title="Kirim">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
-                      <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+
+        <!-- Messages Area -->
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4">
+            <!-- Default welcome message -->
+            <div class="flex justify-start">
+                <div class="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center overflow-hidden mr-2 flex-shrink-0">
+                    <img src="/static/images/PPBOT_Logo.png" alt="PPBOT Avatar" class="w-full h-full object-cover">
+                </div>
+                <div class="bg-gray-200 text-gray-800 rounded-lg py-2 px-4 max-w-sm">
+                    Halo! Saya adalah asisten virtual PPB UIN Jakarta. Ada yang bisa saya bantu terkait layanan kami?
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <form id="chat-form" class="p-4 border-t border-gray-200" autocomplete="off">
+            <div class="flex gap-3">
+                <input 
+                    type="text" 
+                    id="chat-input" 
+                    class="flex-1 border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Ketik pertanyaan Anda di sini..."
+                    required 
+                    autofocus
+                >
+                <button 
+                    type="submit" 
+                    class="w-12 h-12 bg-slate-800 text-white rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors"
+                    title="Kirim"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
                     </svg>
                 </button>
             </div>
         </form>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        // All existing JS logic remains unchanged
+        // Generate or retrieve a unique session ID for this browser session
+        const sessionId = sessionStorage.getItem('chat_session_id') ||
+            'web-user-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        sessionStorage.setItem('chat_session_id', sessionId);
+
+        // DO NOT MODIFY THIS SCRIPT.
+        // Your HTML must work with this existing logic.
+
         const chatMessages = document.getElementById('chat-messages');
         const chatForm = document.getElementById('chat-form');
         const chatInput = document.getElementById('chat-input');
+        let conversationHasStarted = false;
+        let isInitialGreetingSent = false;
+
+        async function sendInitialGreeting() {
+            if (isInitialGreetingSent) return;
+            setLoading(true);
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: "halo",
+                        user_id: sessionId,
+                        conversationHasStarted: false,
+                        isInitialGreetingSent: false
+                    })
+                });
+                const data = await res.json();
+                appendMessage(data.response, 'bot');
+                isInitialGreetingSent = true;
+            } catch (err) {
+                appendMessage('Sorry, an error occurred while starting the conversation. Please reload the page.', 'bot');
+            } finally {
+                setLoading(false);
+            }
+        }
 
         function appendMessage(text, sender) {
             const row = document.createElement('div');
-            row.className = 'message-row ' + sender;
-            
+            row.className = `flex mb-4 ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+            if (sender === 'bot') {
+                // Add avatar for bot messages
+                const avatar = document.createElement('div');
+                avatar.className = 'w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center overflow-hidden mr-2 flex-shrink-0';
+                avatar.innerHTML = '<img src="/static/images/PPBOT_Logo.png" alt="PPBOT Avatar" class="w-full h-full object-cover">';
+                row.appendChild(avatar);
+            }
+
             const content = document.createElement('div');
-            content.className = 'message-content';
+            content.className = `rounded-lg py-2 px-4 max-w-sm ${sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`;
 
             if (sender === 'bot') {
                 content.innerHTML = marked.parse(text);
@@ -185,6 +131,20 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
+        function setLoading(isLoading) {
+            let loadingEl = document.getElementById('loading-bot-msg');
+            if (isLoading && !loadingEl) {
+                const loadingRow = document.createElement('div');
+                loadingRow.className = 'flex justify-start mb-4';
+                loadingRow.id = 'loading-bot-msg'; // This ID is crucial
+                loadingRow.innerHTML = `<div class="rounded-lg py-2 px-4 bg-gray-200 text-gray-800"><span class="animate-pulse">...</span></div>`;
+                chatMessages.appendChild(loadingRow);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } else if (!isLoading && loadingEl) {
+                loadingEl.remove();
+            }
+        }
+
         chatForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const userMsg = chatInput.value.trim();
@@ -192,27 +152,32 @@
 
             appendMessage(userMsg, 'user');
             chatInput.value = '';
-            
-            const loadingRow = document.createElement('div');
-            loadingRow.className = 'message-row bot';
-            loadingRow.id = 'loading-bot-msg';
-            loadingRow.innerHTML = `<div class="message-content"><span class="spinner-border spinner-border-sm"></span></div>`;
-            chatMessages.appendChild(loadingRow);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            setLoading(true);
 
             try {
                 const res = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userMsg })
+                    body: JSON.stringify({
+                        message: userMsg,
+                        user_id: sessionId,
+                        conversationHasStarted: conversationHasStarted,
+                        isInitialGreetingSent: isInitialGreetingSent
+                    })
                 });
                 const data = await res.json();
-                document.getElementById('loading-bot-msg').remove();
                 appendMessage(data.response, 'bot');
+                if (!conversationHasStarted) conversationHasStarted = true;
             } catch (err) {
-                document.getElementById('loading-bot-msg').remove();
                 appendMessage('Maaf, terjadi kesalahan. Mohon coba lagi nanti.', 'bot');
+            } finally {
+                setLoading(false);
             }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+           // Do not send initial greeting automatically.
+           // The bot will greet when the user sends their first message.
         });
     </script>
 </body>
