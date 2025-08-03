@@ -66,7 +66,80 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Markdown content styling */
+        .markdown-content strong {
+            font-weight: bold;
+        }
+        
+        .markdown-content em {
+            font-style: italic;
+        }
+        
+        .markdown-content code {
+            background-color: #f3f4f6;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.875em;
+        }
+        
+        .markdown-content pre {
+            background-color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+        
+        .markdown-content pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        
+        .markdown-content h1, .markdown-content h2, .markdown-content h3, 
+        .markdown-content h4, .markdown-content h5, .markdown-content h6 {
+            font-weight: bold;
+            margin: 0.5rem 0 0.25rem 0;
+        }
+        
+        .markdown-content h1 { font-size: 1.5em; }
+        .markdown-content h2 { font-size: 1.25em; }
+        .markdown-content h3 { font-size: 1.125em; }
+        
+        .markdown-content ul, .markdown-content ol {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        .markdown-content li {
+            margin: 0.25rem 0;
+        }
+        
+        .markdown-content blockquote {
+            border-left: 4px solid #e5e7eb;
+            padding-left: 1rem;
+            margin: 0.5rem 0;
+            color: #6b7280;
+        }
+        
+        .markdown-content a {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+        
+        .markdown-content a:hover {
+            color: #2563eb;
+        }
+    </style>
     <script>
+        // Configure marked.js for proper Markdown rendering
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            sanitize: false
+        });
+        
         // Generate or retrieve a unique session ID for this browser session
         const sessionId = sessionStorage.getItem('chat_session_id') ||
             'web-user-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -118,10 +191,28 @@
             }
 
             const content = document.createElement('div');
-            content.className = `rounded-lg py-2 px-4 max-w-sm ${sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`;
+            
+            // Terapkan kelas dasar
+            const baseClasses = `rounded-lg py-2 px-4 max-w-sm`;
+            const senderClasses = sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800';
+            // Tambahkan 'break-words' di sini untuk menangani teks panjang non-URL dengan lebih baik
+            content.className = `${baseClasses} ${senderClasses} break-words`; 
 
             if (sender === 'bot') {
-                content.innerHTML = marked.parse(text);
+                // --- START: Standard Markdown Processing with marked.js ---
+
+                // Use the standard and recommended way to parse Markdown
+                // This ensures all Markdown features work correctly, including [text](url) links
+                const htmlContent = marked.parse(text, {
+                    gfm: true,  // GitHub Flavored Markdown - standard for link parsing
+                    breaks: true  // Respect line breaks
+                });
+                
+                content.innerHTML = htmlContent;
+                content.classList.add('markdown-content'); // Add CSS class for styling
+
+                // --- END: Standard Markdown Processing with marked.js ---
+
             } else {
                 content.textContent = text;
             }
