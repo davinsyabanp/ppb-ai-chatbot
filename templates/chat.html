@@ -9,129 +9,278 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-100 min-h-screen font-poppins flex items-center justify-center p-4">
+<body class="bg-gradient-to-br from-gray-50 via-white to-gray-100 font-poppins flex flex-col min-h-screen">
     <!-- Main Chat Container -->
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl h-[600px] flex flex-col">
-        <!-- Header -->
-        <div class="bg-slate-800 text-white p-4 rounded-t-xl flex items-center">
+    <div class="flex flex-col h-screen w-full md:max-w-none md:mx-0 md:p-0 p-2 sm:p-4">
+        <!-- Header - Fixed Height -->
+        <header class="flex-shrink-0 bg-gradient-to-r from-slate-800 to-slate-700 text-white p-4 sm:p-5 rounded-t-xl md:rounded-none flex items-center z-10 shadow-lg">
             <!-- Logo avatar on the left -->
-            <div class="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center overflow-hidden mr-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center overflow-hidden mr-4 sm:mr-5 border border-white/20">
                 <img src="/static/images/PPBOT_Logo.png" alt="PPBOT Logo" class="w-full h-full object-cover">
             </div>
             <!-- Title and status -->
             <div class="flex flex-col flex-1">
-                <h1 class="text-lg font-semibold">PPBOT</h1>
+                <h1 class="text-lg sm:text-xl font-bold tracking-wide">PPBOT</h1>
                 <div class="flex items-center gap-2 mt-1">
-                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span class="text-sm text-gray-300">Online</span>
+                    <div class="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse shadow-sm"></div>
+                    <span class="text-xs sm:text-sm text-gray-200 font-medium">Online</span>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- Messages Area -->
-        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4">
+        <!-- Messages Area - Flexible Height -->
+        <main id="chat-messages" class="flex-1 p-3 sm:p-4 overflow-y-auto bg-gradient-to-b from-gray-50 to-white pb-6">
             <!-- Default welcome message -->
-            <div class="flex justify-start">
-                <div class="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center overflow-hidden mr-2 flex-shrink-0">
+            <div class="flex justify-start mb-3">
+                <div class="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-slate-600 to-slate-700 rounded-full flex items-center justify-center overflow-hidden mr-2 flex-shrink-0 shadow-md border border-white/20">
                     <img src="/static/images/PPBOT_Logo.png" alt="PPBOT Avatar" class="w-full h-full object-cover">
                 </div>
-                <div class="bg-gray-200 text-gray-800 rounded-lg py-2 px-4 max-w-sm">
-                    Halo! Saya adalah asisten virtual PPB UIN Jakarta. Ada yang bisa saya bantu terkait layanan kami?
+                <div class="bg-white text-gray-800 rounded-xl py-2 px-3 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl text-sm sm:text-base shadow-md border border-gray-100">
+                    <p class="font-medium text-gray-900">Halo! Saya adalah asisten virtual PPB UIN Jakarta. Ada yang bisa saya bantu terkait layanan kami?</p>
                 </div>
             </div>
-        </div>
+            <!-- Spacer to ensure bottom spacing -->
+            <div class="h-6"></div>
+        </main>
 
-        <!-- Input Area -->
-        <form id="chat-form" class="p-4 border-t border-gray-200" autocomplete="off">
-            <div class="flex gap-3">
-                <input 
-                    type="text" 
-                    id="chat-input" 
-                    class="flex-1 border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Ketik pertanyaan Anda di sini..."
-                    required 
-                    autofocus
-                >
-                <button 
-                    type="submit" 
-                    class="w-12 h-12 bg-slate-800 text-white rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors"
-                    title="Kirim"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
-                    </svg>
-                </button>
-            </div>
-        </form>
+        <!-- Input Area - Fixed Height -->
+        <footer class="flex-shrink-0 bg-white border-t border-gray-200 p-4 sm:p-5 pt-6 rounded-b-xl md:rounded-none z-10 shadow-lg">
+            <form id="chat-form" autocomplete="off">
+                <div class="flex gap-3 sm:gap-4">
+                    <input 
+                        type="text" 
+                        id="chat-input" 
+                        class="flex-1 border border-gray-300 rounded-full px-4 sm:px-5 py-3 sm:py-4 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200 hover:shadow-md"
+                        placeholder="Ketik pertanyaan Anda di sini..."
+                        required 
+                        autofocus
+                    >
+                    <button 
+                        type="submit" 
+                        class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full flex items-center justify-center hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                        title="Kirim"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" class="sm:w-5 sm:h-5">
+                            <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </footer>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <style>
-        /* Markdown content styling */
-        .markdown-content strong {
-            font-weight: bold;
-        }
-        
-        .markdown-content em {
-            font-style: italic;
-        }
-        
-        .markdown-content code {
-            background-color: #f3f4f6;
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 0.875em;
-        }
-        
-        .markdown-content pre {
-            background-color: #f3f4f6;
-            padding: 1rem;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 0.5rem 0;
-        }
-        
-        .markdown-content pre code {
-            background-color: transparent;
-            padding: 0;
-        }
-        
-        .markdown-content h1, .markdown-content h2, .markdown-content h3, 
-        .markdown-content h4, .markdown-content h5, .markdown-content h6 {
-            font-weight: bold;
-            margin: 0.5rem 0 0.25rem 0;
-        }
-        
-        .markdown-content h1 { font-size: 1.5em; }
-        .markdown-content h2 { font-size: 1.25em; }
-        .markdown-content h3 { font-size: 1.125em; }
-        
-        .markdown-content ul, .markdown-content ol {
-            margin: 0.5rem 0;
-            padding-left: 1.5rem;
-        }
-        
-        .markdown-content li {
-            margin: 0.25rem 0;
-        }
-        
-        .markdown-content blockquote {
-            border-left: 4px solid #e5e7eb;
-            padding-left: 1rem;
-            margin: 0.5rem 0;
-            color: #6b7280;
-        }
-        
-        .markdown-content a {
-            color: #3b82f6;
-            text-decoration: underline;
-        }
-        
-        .markdown-content a:hover {
-            color: #2563eb;
-        }
-    </style>
+         <style>
+         /* Enhanced professional styling */
+         .chat-container {
+             backdrop-filter: blur(10px);
+             background: rgba(255, 255, 255, 0.95);
+         }
+         
+         /* Smooth scrolling */
+         #chat-messages {
+             scroll-behavior: smooth;
+         }
+         
+         /* Enhanced focus states */
+         #chat-input:focus {
+             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+         }
+         
+         /* Professional message animations */
+         .message-enter {
+             animation: messageSlideIn 0.3s ease-out;
+         }
+         
+         @keyframes messageSlideIn {
+             from {
+                 opacity: 0;
+                 transform: translateY(10px);
+             }
+             to {
+                 opacity: 1;
+                 transform: translateY(0);
+             }
+         }
+         
+                  /* Enhanced Markdown content styling */
+         .markdown-content {
+             line-height: 1.6;
+             color: #374151;
+         }
+         
+         .markdown-content strong {
+             font-weight: 600;
+             color: #111827;
+         }
+         
+         .markdown-content em {
+             font-style: italic;
+             color: #6b7280;
+         }
+         
+         .markdown-content code {
+             background-color: #f3f4f6;
+             padding: 0.125rem 0.25rem;
+             border-radius: 0.375rem;
+             font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+             font-size: 0.875em;
+             color: #dc2626;
+             border: 1px solid #e5e7eb;
+         }
+         
+         .markdown-content pre {
+             background-color: #1f2937;
+             color: #f9fafb;
+             padding: 1rem;
+             border-radius: 0.5rem;
+             overflow-x: auto;
+             margin: 0.75rem 0;
+             border: 1px solid #374151;
+             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+         }
+         
+         .markdown-content pre code {
+             background-color: transparent;
+             padding: 0;
+             color: #f9fafb;
+             border: none;
+         }
+         
+         .markdown-content h1, .markdown-content h2, .markdown-content h3, 
+         .markdown-content h4, .markdown-content h5, .markdown-content h6 {
+             font-weight: 600;
+             margin: 1rem 0 0.5rem 0;
+             color: #111827;
+             line-height: 1.3;
+         }
+         
+         .markdown-content h1 { 
+             font-size: 1.5em; 
+             border-bottom: 2px solid #e5e7eb;
+             padding-bottom: 0.25rem;
+         }
+         .markdown-content h2 { 
+             font-size: 1.25em; 
+             border-bottom: 1px solid #e5e7eb;
+             padding-bottom: 0.25rem;
+         }
+         .markdown-content h3 { font-size: 1.125em; }
+         
+         .markdown-content ul, .markdown-content ol {
+             margin: 0.75rem 0;
+             padding-left: 1.5rem;
+         }
+         
+         .markdown-content li {
+             margin: 0.375rem 0;
+             line-height: 1.5;
+         }
+         
+         .markdown-content ul li {
+             list-style-type: disc;
+         }
+         
+         .markdown-content ol li {
+             list-style-type: decimal;
+         }
+         
+         .markdown-content blockquote {
+             border-left: 4px solid #3b82f6;
+             padding: 0.75rem 1rem;
+             margin: 1rem 0;
+             background-color: #f8fafc;
+             border-radius: 0.375rem;
+             color: #374151;
+             font-style: italic;
+         }
+         
+         .markdown-content a {
+             color: #3b82f6;
+             text-decoration: none;
+             border-bottom: 1px solid #3b82f6;
+             transition: all 0.2s ease;
+         }
+         
+         .markdown-content a:hover {
+             color: #2563eb;
+             border-bottom-color: #2563eb;
+         }
+         
+         .markdown-content p {
+             margin: 0.75rem 0;
+             line-height: 1.6;
+         }
+         
+         .markdown-content hr {
+             border: none;
+             border-top: 1px solid #e5e7eb;
+             margin: 1.5rem 0;
+         }
+         
+         .markdown-content table {
+             border-collapse: collapse;
+             width: 100%;
+             margin: 1rem 0;
+             background-color: white;
+             border-radius: 0.5rem;
+             overflow: hidden;
+             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+         }
+         
+         .markdown-content th {
+             background-color: #f9fafb;
+             padding: 0.75rem;
+             text-align: left;
+             font-weight: 600;
+             color: #374151;
+             border-bottom: 1px solid #e5e7eb;
+         }
+         
+         .markdown-content td {
+             padding: 0.75rem;
+             border-bottom: 1px solid #f3f4f6;
+             color: #374151;
+         }
+         
+                  .markdown-content tr:hover {
+             background-color: #f9fafb;
+         }
+         
+         /* Additional typography improvements */
+         .markdown-content {
+             font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         }
+         
+         /* Better spacing for nested lists */
+         .markdown-content ul ul, .markdown-content ol ol {
+             margin: 0.25rem 0;
+         }
+         
+         /* Highlight important information */
+         .markdown-content strong {
+             position: relative;
+         }
+         
+         /* Custom styling for specific elements */
+         .markdown-content .highlight {
+             background-color: #fef3c7;
+             padding: 0.125rem 0.25rem;
+             border-radius: 0.25rem;
+         }
+         
+         /* Better mobile responsiveness for code blocks */
+         @media (max-width: 640px) {
+             .markdown-content pre {
+                 font-size: 0.875rem;
+                 padding: 0.75rem;
+             }
+             
+             .markdown-content table {
+                 font-size: 0.875rem;
+             }
+         }
+     </style>
     <script>
         // Configure marked.js for proper Markdown rendering
         marked.setOptions({
@@ -178,25 +327,25 @@
             }
         }
 
-        function appendMessage(text, sender) {
-            const row = document.createElement('div');
-            row.className = `flex mb-4 ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+                 function appendMessage(text, sender) {
+             const row = document.createElement('div');
+             row.className = `flex mb-3 ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
 
-            if (sender === 'bot') {
-                // Add avatar for bot messages
-                const avatar = document.createElement('div');
-                avatar.className = 'w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center overflow-hidden mr-2 flex-shrink-0';
-                avatar.innerHTML = '<img src="/static/images/PPBOT_Logo.png" alt="PPBOT Avatar" class="w-full h-full object-cover">';
-                row.appendChild(avatar);
-            }
+             if (sender === 'bot') {
+                 // Add avatar for bot messages
+                 const avatar = document.createElement('div');
+                 avatar.className = 'w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-slate-600 to-slate-700 rounded-full flex items-center justify-center overflow-hidden mr-2 flex-shrink-0 shadow-md border border-white/20';
+                 avatar.innerHTML = '<img src="/static/images/PPBOT_Logo.png" alt="PPBOT Avatar" class="w-full h-full object-cover">';
+                 row.appendChild(avatar);
+             }
 
-            const content = document.createElement('div');
-            
-            // Terapkan kelas dasar
-            const baseClasses = `rounded-lg py-2 px-4 max-w-sm`;
-            const senderClasses = sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800';
-            // Tambahkan 'break-words' di sini untuk menangani teks panjang non-URL dengan lebih baik
-            content.className = `${baseClasses} ${senderClasses} break-words`; 
+             const content = document.createElement('div');
+             
+             // Terapkan kelas dasar
+             const baseClasses = `rounded-xl py-2 px-3 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl text-sm sm:text-base shadow-md`;
+             const senderClasses = sender === 'user' ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white' : 'bg-white text-gray-800 border border-gray-100';
+             // Tambahkan 'break-words' di sini untuk menangani teks panjang non-URL dengan lebih baik
+             content.className = `${baseClasses} ${senderClasses} break-words`; 
 
             if (sender === 'bot') {
                 // --- START: Standard Markdown Processing with marked.js ---
@@ -217,24 +366,54 @@
                 content.textContent = text;
             }
 
-            row.appendChild(content);
-            chatMessages.appendChild(row);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+                         row.appendChild(content);
+             row.classList.add('message-enter');
+             chatMessages.appendChild(row);
+             
+             // Add spacer after the last message
+             const existingSpacer = chatMessages.querySelector('.message-spacer');
+             if (existingSpacer) {
+                 existingSpacer.remove();
+             }
+             const spacer = document.createElement('div');
+             spacer.className = 'h-4 message-spacer';
+             chatMessages.appendChild(spacer);
+             
+             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        function setLoading(isLoading) {
-            let loadingEl = document.getElementById('loading-bot-msg');
-            if (isLoading && !loadingEl) {
-                const loadingRow = document.createElement('div');
-                loadingRow.className = 'flex justify-start mb-4';
-                loadingRow.id = 'loading-bot-msg'; // This ID is crucial
-                loadingRow.innerHTML = `<div class="rounded-lg py-2 px-4 bg-gray-200 text-gray-800"><span class="animate-pulse">...</span></div>`;
-                chatMessages.appendChild(loadingRow);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            } else if (!isLoading && loadingEl) {
-                loadingEl.remove();
-            }
-        }
+                 function setLoading(isLoading) {
+             let loadingEl = document.getElementById('loading-bot-msg');
+             if (isLoading && !loadingEl) {
+                 const loadingRow = document.createElement('div');
+                 loadingRow.className = 'flex justify-start mb-3';
+                 loadingRow.id = 'loading-bot-msg'; // This ID is crucial
+                 
+                 // Create avatar for loading message
+                 const avatar = document.createElement('div');
+                 avatar.className = 'w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-slate-600 to-slate-700 rounded-full flex items-center justify-center overflow-hidden mr-2 flex-shrink-0 shadow-md border border-white/20';
+                 avatar.innerHTML = '<img src="/static/images/PPBOT_Logo.png" alt="PPBOT Avatar" class="w-full h-full object-cover">';
+                 loadingRow.appendChild(avatar);
+                 
+                 loadingRow.innerHTML += `<div class="rounded-xl py-2 px-3 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl bg-white text-gray-800 text-sm sm:text-base shadow-md border border-gray-100"><span class="animate-pulse">...</span></div>`;
+                 
+                 // Remove existing spacer before adding loading
+                 const existingSpacer = chatMessages.querySelector('.message-spacer');
+                 if (existingSpacer) {
+                     existingSpacer.remove();
+                 }
+                 
+                 chatMessages.appendChild(loadingRow);
+                 chatMessages.scrollTop = chatMessages.scrollHeight;
+             } else if (!isLoading && loadingEl) {
+                 loadingEl.remove();
+                 
+                 // Add spacer back after loading is done
+                 const spacer = document.createElement('div');
+                 spacer.className = 'h-4 message-spacer';
+                 chatMessages.appendChild(spacer);
+             }
+         }
 
         chatForm.addEventListener('submit', async function(e) {
             e.preventDefault();

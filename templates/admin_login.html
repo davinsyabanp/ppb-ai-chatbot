@@ -21,6 +21,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
+        }
+        @media (min-width: 640px) {
+            .main-content {
+                padding: 1.5rem;
+            }
         }
         .login-card {
             width: 100%;
@@ -28,31 +34,68 @@
             border-radius: 12px;
             box-shadow: 0 6px 30px rgba(0,0,0,0.08);
             background: #fff;
-            padding: 40px;
+            padding: 2rem;
             border-top: 5px solid #003366; /* Biru Tua UIN */
+        }
+        @media (min-width: 640px) {
+            .login-card {
+                padding: 2.5rem;
+            }
         }
         .header-logo {
             text-align: center;
-            margin-bottom: 24px;
+            margin-bottom: 1.5rem;
         }
         .header-logo img {
-            height: 80px; /* Placeholder for logo */
-            margin-bottom: 12px;
+            height: 60px;
+            margin-bottom: 0.75rem;
+        }
+        @media (min-width: 640px) {
+            .header-logo img {
+                height: 80px;
+                margin-bottom: 0.75rem;
+            }
         }
         .header-logo h5 {
             font-weight: 600;
             color: #003366; /* Biru Tua UIN */
+            font-size: 1.125rem;
+        }
+        @media (min-width: 640px) {
+            .header-logo h5 {
+                font-size: 1.25rem;
+            }
         }
         .header-logo p {
             color: #6c757d;
-            font-size: 0.95rem;
+            font-size: 0.875rem;
         }
-        .form-label { font-weight: 500; color: #343a40; }
+        @media (min-width: 640px) {
+            .header-logo p {
+                font-size: 0.95rem;
+            }
+        }
+        .form-label { 
+            font-weight: 500; 
+            color: #343a40; 
+            font-size: 0.875rem;
+        }
+        @media (min-width: 640px) {
+            .form-label {
+                font-size: 1rem;
+            }
+        }
         .form-control {
             border-radius: 8px;
-            padding: 12px 16px;
-            font-size: 1rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
             border: 1px solid #ced4da;
+        }
+        @media (min-width: 640px) {
+            .form-control {
+                padding: 0.75rem 1rem;
+                font-size: 1rem;
+            }
         }
         .form-control:focus {
             border-color: #d4af37; /* Emas UIN */
@@ -60,24 +103,44 @@
         }
         .btn-primary {
             border-radius: 8px;
-            padding: 12px;
-            font-size: 1.1rem;
+            padding: 0.75rem;
+            font-size: 1rem;
             font-weight: 600;
             background-color: #003366; /* Biru Tua UIN */
             border: none;
             transition: background-color 0.2s;
         }
+        @media (min-width: 640px) {
+            .btn-primary {
+                padding: 0.75rem;
+                font-size: 1.1rem;
+            }
+        }
         .btn-primary:hover {
             background-color: #002244; /* Biru lebih gelap */
         }
-        .alert { border-radius: 8px; }
+        .alert { 
+            border-radius: 8px; 
+            font-size: 0.875rem;
+        }
+        @media (min-width: 640px) {
+            .alert {
+                font-size: 1rem;
+            }
+        }
         .app-footer {
             text-align: center;
-            padding: 15px 0;
-            font-size: 0.85rem;
+            padding: 1rem 0;
+            font-size: 0.75rem;
             color: #6c757d;
             background-color: #ffffff;
             border-top: 1px solid #e9ecef;
+        }
+        @media (min-width: 640px) {
+            .app-footer {
+                padding: 1rem 0;
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
