@@ -293,7 +293,7 @@ def embed_all_files():
     from app.core import start_embedding
     started = start_embedding(app, force_all=True)
     if started:
-        msg = 'Force re-embedding started for all files! Progress will update below.'
+        msg = 'Embedding started for all files! Progress will update below.'
     else:
         msg = 'Embedding is already running.'
     files = get_file_status()
