@@ -1,13 +1,13 @@
 import os
 import pandas as pd
 from langchain_community.document_loaders import PyMuPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.schema import Document
 from app.vector_store import create_vector_store
+from app.langchain_compat import Document, RecursiveCharacterTextSplitter
 
 def load_csv_file(file_path):
     """
     Load a CSV file and convert it to documents.
+    Handles CSV files with quoted outer strings.
     
     Args:
         file_path: Path to the CSV file
@@ -16,24 +16,56 @@ def load_csv_file(file_path):
         list: List of Document objects
     """
     try:
-        # Read CSV file
-        df = pd.read_csv(file_path)
+        import csv
+        from io import StringIO
         
         documents = []
         
-        # Convert each row to a document
-        for index, row in df.iterrows():
-            # Convert row to text format
-            row_text = ""
-            for column, value in row.items():
-                if pd.notna(value):  # Skip NaN values
-                    row_text += f"{column}: {value}\n"
+        with open(file_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+        
+        if not lines:
+            print(f"CSV file {file_path} is empty")
+            return []
+        
+        # Extract and unquote headers from first line
+        header_line = lines[0].strip()
+        # Remove outer quotes if present
+        if header_line.startswith('"') and header_line.endswith('"'):
+            header_line = header_line[1:-1]
+        headers = [h.strip() for h in header_line.split(',')]
+        print(f"  Headers detected: {headers}")
+        
+        # Process data rows (skip header)
+        for row_num, line in enumerate(lines[1:], start=2):
+            line = line.strip()
+            if not line:
+                continue
             
-            if row_text.strip():  # Only add non-empty rows
-                # Create metadata with file info and row number
+            # Remove outer quotes if present
+            if line.startswith('"') and line.endswith('"'):
+                line = line[1:-1]
+            
+            # Parse CSV line respecting quotes
+            try:
+                reader = csv.reader(StringIO(line))
+                values = next(reader)
+            except:
+                # Fallback: simple split
+                values = line.split(',')
+            
+            # Map headers to values
+            row_text = ""
+            for i, header in enumerate(headers):
+                if i < len(values):
+                    value = values[i].strip().strip('"')  # Remove quotes
+                    if value:
+                        row_text += f"{header}: {value}\n"
+            
+            if row_text.strip():
                 metadata = {
                     "source": os.path.basename(file_path),
-                    "row": index + 1,
+                    "row": row_num,
                     "file_type": "csv"
                 }
                 
@@ -47,6 +79,8 @@ def load_csv_file(file_path):
         
     except Exception as e:
         print(f"Error loading CSV file {file_path}: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 def load_pdf_file(file_path):

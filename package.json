@@ -2,8 +2,8 @@
   "scripts": {
     "build": "tailwindcss -i ./src/input.css -o ./static/css/output.css --watch",
     "build-prod": "npx tailwindcss -i ./src/input.css -o ./static/css/output.css --minify"
-  },
-  "devDependencies": {
-    "tailwindcss": "^3.4.0"
+},
+"devDependencies": {
+    "tailwindcss": "^3.4.18"
   }
 }

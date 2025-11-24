@@ -9,7 +9,7 @@ import click
 from werkzeug.utils import secure_filename
 import hashlib
 from langchain_community.document_loaders import PyMuPDFLoader
-from langchain.schema import Document
+from app.langchain_compat import Document
 import pandas as pd
 import io
 

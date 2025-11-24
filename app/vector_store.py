@@ -1,7 +1,7 @@
 import os
 from langchain_community.vectorstores import FAISS
 from .models import load_embedding_model
-from langchain.schema import Document
+from .langchain_compat import Document
 from typing import List
 import re
 import requests

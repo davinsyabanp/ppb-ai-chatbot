@@ -1,7 +1,9 @@
 from typing import Dict, List, Optional, Tuple, Any
-from langchain.prompts import ChatPromptTemplate
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains.retrieval import create_retrieval_chain
+from .langchain_compat import (
+    ChatPromptTemplate,
+    create_stuff_documents_chain,
+    create_retrieval_chain,
+)
 from .models import load_llm, load_embedding_model
 from .vector_store import load_vector_store, hybrid_retrieve
 import os
@@ -11,8 +13,7 @@ import threading
 from app.models import KnowledgeBaseFile, db
 from app.vector_store import create_vector_store
 from langchain_community.document_loaders import PyMuPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.schema import Document
+from .langchain_compat import Document, RecursiveCharacterTextSplitter
 import pandas as pd  # type: ignore
 import hashlib
 
