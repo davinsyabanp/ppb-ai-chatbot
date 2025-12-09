@@ -30,6 +30,7 @@ class KnowledgeBaseFile(db.Model):
     filetype = db.Column(db.String(10), nullable=False)
     filepath = db.Column(db.String(255), nullable=False)
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    embedded_at = db.Column(db.DateTime, nullable=True)  # Tracks when file was last embedded
     filehash = db.Column(db.String(64), nullable=False)
 
 class NomicAtlasEmbeddings(Embeddings):
@@ -39,9 +40,6 @@ class NomicAtlasEmbeddings(Embeddings):
     """
     def __init__(self, api_key=None, model="nomic-embed-text-v1.5"):
         import os
-        print(f"--- DEBUGGING in models.py ---")
-        print(f"Accessing NOMIC_API_KEY from models.py: {os.getenv('NOMIC_API_KEY')}")
-        print("------------------------------")
         self.api_key = api_key or os.getenv("NOMIC_API_KEY")
         if not self.api_key:
             raise ValueError("NOMIC_API_KEY environment variable is required for Nomic Atlas embeddings. Please add it to your .env and run 'nomic login <api-key>' in your terminal.")
@@ -75,7 +73,7 @@ def load_llm():
         raise ValueError("GOOGLE_API_KEY environment variable is required")
     
     return ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash",
+        model="gemini-2.5-flash",
         google_api_key=api_key,
         temperature=0.1
     )

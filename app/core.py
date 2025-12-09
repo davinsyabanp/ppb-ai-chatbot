@@ -115,15 +115,19 @@ def mark_user_as_known(user_id: str) -> None:
 
 def format_bot_response(answer: str) -> str:
     """
-    Minimal post-processing: strip whitespace, remove XML tags, and ensure a friendly closing if missing.
+    Minimal post-processing: strip whitespace and remove XML tags.
+    Only add closing if answer is very short or seems incomplete.
     """
     # Remove leading/trailing whitespace and normalize line breaks
     answer = answer.strip().replace("\r\n", "\n").replace("\r", "\n")
     # Remove any leftover <context>...</context> tags
     answer = re.sub(r"<context>[\s\S]*?</context>", "", answer, flags=re.IGNORECASE).strip()
-    # Optionally, add a friendly closing if not present
-    if not re.search(r"\?\s*$", answer):
-        answer += "\n\nApakah ada pertanyaan lain yang bisa saya bantu? 😊"
+    
+    # Only add closing for very short answers (likely incomplete)
+    # Don't force it on every answer
+    if len(answer) < 50 and not re.search(r"[\?\!]\s*$", answer):
+        answer += " Apakah ada yang bisa saya bantu lebih lanjut?"
+    
     return answer
 
 
@@ -474,11 +478,14 @@ def run_embedding_background(app: Any, force_all: bool = False) -> None:
         chunks = split_documents_by_type(documents, chunk_size=2000, chunk_overlap=400)
         embedding_progress["message"] = "Creating vector store..."
         create_vector_store(chunks)
-        # Update hashes in DB for changed files
+        # Update hashes and embedded_at timestamp in DB for embedded files
+        from datetime import datetime
+        now = datetime.utcnow()
         for kb_file in files:
             try:
                 with open(kb_file.filepath, "rb") as f:
                     kb_file.filehash = hashlib.sha256(f.read()).hexdigest()
+                kb_file.embedded_at = now  # Mark file as embedded
                 db.session.commit()
             except Exception:
                 pass

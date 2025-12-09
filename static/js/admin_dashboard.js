@@ -133,6 +133,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast('File deleted successfully!', 'success');
                 closeModal('deleteModal');
                 refreshKnowledgeBaseTable();
+                // Immediately check KB status after delete
+                setTimeout(() => pollKBStatus(), 500);
             } else {
                 throw new Error('Delete failed');
             }
@@ -148,19 +150,45 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function pollKBStatus() {
         fetch('/api/kb_status')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 const statusMsg = document.getElementById('kb-status-message');
                 const embedBtn = document.getElementById('embed-data-btn');
-                if (data.status === 'active') {
-                    statusMsg.innerHTML = '<span class="inline-flex items-center px-3 py-2 rounded-full bg-green-100 text-green-800 text-sm font-semibold status-message"><i class="bi bi-check-circle mr-2"></i>Knowledge base is up to date and active.</span>';
-                    embedBtn.disabled = true;
-                    embedBtn.className = 'w-full py-4 px-6 rounded-xl font-semibold transition-all duration-200 text-white bg-slate-400 cursor-not-allowed text-sm shadow-lg';
-                } else {
-                    statusMsg.innerHTML = '<span class="inline-flex items-center px-3 py-2 rounded-full bg-yellow-100 text-yellow-800 text-sm font-semibold status-message"><i class="bi bi-exclamation-triangle mr-2"></i>Knowledge base has been modified. Re-embedding is required.</span>';
+                
+                if (!statusMsg || !embedBtn) {
+                    console.warn('Status elements not found');
+                    return;
+                }
+                
+                if (data.status === 'requires_embedding') {
+                    // Files exist but not all embedded, or new files added - BUTTON ENABLED
+                    statusMsg.innerHTML = '<span class="inline-flex items-center px-3 py-2 rounded-full bg-yellow-100 text-yellow-800 text-sm font-semibold status-message"><i class="bi bi-exclamation-triangle mr-2"></i>New or unembed files detected. Click "Embed Data" to update.</span>';
                     embedBtn.disabled = false;
                     embedBtn.className = 'w-full py-4 px-6 rounded-xl font-semibold transition-all duration-200 text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-sm shadow-lg hover:shadow-xl transform hover:scale-[1.02]';
+                    console.log('✅ Embed button ENABLED - files need embedding');
+                } else if (data.status === 'active') {
+                    // All files embedded and up to date - BUTTON DISABLED
+                    statusMsg.innerHTML = '<span class="inline-flex items-center px-3 py-2 rounded-full bg-green-100 text-green-800 text-sm font-semibold status-message"><i class="bi bi-check-circle mr-2"></i>All files are embedded and up to date.</span>';
+                    embedBtn.disabled = true;
+                    embedBtn.className = 'w-full py-4 px-6 rounded-xl font-semibold transition-all duration-200 text-white bg-slate-400 cursor-not-allowed text-sm shadow-lg';
+                    console.log('✅ Embed button DISABLED - all files up to date');
+                } else if (data.status === 'no_files') {
+                    // No files uploaded - BUTTON DISABLED
+                    statusMsg.innerHTML = '<span class="inline-flex items-center px-3 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-semibold status-message"><i class="bi bi-info-circle mr-2"></i>No files uploaded yet. Upload files first.</span>';
+                    embedBtn.disabled = true;
+                    embedBtn.className = 'w-full py-4 px-6 rounded-xl font-semibold transition-all duration-200 text-white bg-slate-400 cursor-not-allowed text-sm shadow-lg';
+                    console.log('✅ Embed button DISABLED - no files');
+                } else {
+                    console.warn(`Unknown status: ${data.status}`);
                 }
+            })
+            .catch(error => {
+                console.error('Error polling KB status:', error);
             });
     }
 

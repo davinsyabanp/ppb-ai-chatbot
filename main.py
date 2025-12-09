@@ -15,11 +15,6 @@ import io
 
 load_dotenv()
 import os
-print("--- DEBUGGING ENV ---")
-print(f"Current Working Directory: {os.getcwd()}")
-print(f".env file found at: {find_dotenv()}")
-print(f"NOMIC_API_KEY after load_dotenv(): {os.getenv('NOMIC_API_KEY')}")
-print("--------------------")
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'devsecretkey')
@@ -475,11 +470,43 @@ def preview_chunking():
 
 @app.route("/api/kb_status", methods=["GET"])
 def kb_status():
+    """
+    Check if knowledge base needs embedding.
+    Returns 'requires_embedding' if:
+    - No embedding has been done at all, OR
+    - There are files uploaded after the last embedding
+    Returns 'active' if all files have been embedded and no new files since.
+    """
     index_path = os.path.join("vector_db", "faiss_index")
-    if os.path.exists(index_path):
-        return jsonify({"status": "active"})
-    else:
+    
+    # Check if any files exist
+    files = KnowledgeBaseFile.query.all()
+    if not files:
+        # No files at all - nothing to embed
+        return jsonify({"status": "no_files"})
+    
+    # Check if index exists
+    if not os.path.exists(index_path):
+        # Files exist but no index - needs embedding
         return jsonify({"status": "requires_embedding"})
+    
+    # Check if all files have been embedded
+    # If ANY file has embedded_at as None, it needs embedding
+    from sqlalchemy import func
+    unembed_files = KnowledgeBaseFile.query.filter(KnowledgeBaseFile.embedded_at == None).all()
+    if unembed_files:
+        return jsonify({"status": "requires_embedding"})
+    
+    # Check if any files were uploaded after the last embedding
+    max_embedded_time = db.session.query(func.max(KnowledgeBaseFile.embedded_at)).scalar()
+    max_uploaded_time = db.session.query(func.max(KnowledgeBaseFile.uploaded_at)).scalar()
+    
+    if max_embedded_time and max_uploaded_time and max_uploaded_time > max_embedded_time:
+        # New files uploaded after last embedding
+        return jsonify({"status": "requires_embedding"})
+    
+    # If we reach here, KB is already active/embedded with all files up to date
+    return jsonify({"status": "active"})
 
 @app.route("/api/admin/delete_vector_db", methods=["POST"])
 @login_required
