@@ -101,86 +101,19 @@ ppb-ai-chatbot/
 
 Diagram berikut menunjukkan alur dasar sistem RAG:
 
-```mermaid
-graph LR
-    A[User Query] --> B[Retriever]
-    B --> C[Knowledge Base]
-    C --> B
-    B --> D[Generator]
-    D --> E[Response]
-    
-    style A fill:#e1f5ff
-    style E fill:#e1f5ff
-    style B fill:#fff4e1
-    style D fill:#fff4e1
-    style C fill:#e8f5e9
-```
+![RAG Flow Diagram](docs/images/rag-flow-diagram.png)
 
 ### 2. Sistem RAG - Fase Indexing & Retrieval
 
 Diagram berikut menunjukkan dua fase utama sistem RAG: Fase Indexing dan Fase Retrieval & Generation:
 
-```mermaid
-graph TB
-    subgraph Indexing["Fase Indexing"]
-        A1["Documents Directory<br/>/documents<br/>PDF, TXT, CSV"] --> A2["Document Loading<br/>PyMuPDFLoader, pandas<br/>ingest.py"]
-        A2 --> A3["Text Splitting<br/>RecursiveCharacterTextSplitter<br/>ingest.py"]
-        A3 --> A4["Text Embedding<br/>Nomic Atlas<br/>nomic-embed-text-v1.5<br/>ingest.py"]
-        A4 --> A5["Vector Storage<br/>FAISS Vector Store<br/>/vector_db/<br/>ingest.py"]
-    end
-    
-    subgraph Retrieval["Fase Retrieval & Generation"]
-        B1["User Query<br/>Web Interface<br/>main.py"] --> B2["Hybrid Retrieval<br/>Semantic + Keyword Search<br/>hybrid_retrieve<br/>app/core.py"]
-        B2 --> B3["FAISS Vector Store<br/>Similarity Search<br/>/vector_db/"]
-        B3 --> B4["Document Reranking<br/>Jina AI Reranker<br/>jina-reranker-v2-base-multilingual<br/>app/vector_store.py"]
-        B4 --> B5["Prompt Augmentation<br/>ChatPromptTemplate<br/>Context + Query<br/>app/core.py"]
-        B5 --> B6["Answer Generation<br/>Google Gemini LLM<br/>gemini-2.0-flash<br/>app/models.py"]
-        B6 --> B7["Response to User<br/>Web Interface<br/>main.py"]
-    end
-    
-    A5 -.->|"Stored Vectors"| B3
-    
-    style Indexing fill:#e3f2fd
-    style Retrieval fill:#f3e5f5
-```
+![Sistem RAG - Fase Indexing & Retrieval](docs/images/rag-system-phases.png)
 
 ### 3. System Architecture - Web Application
 
 Diagram berikut menunjukkan arsitektur lengkap aplikasi web dengan Flask:
 
-```mermaid
-graph TB
-    subgraph Frontend["Frontend (Browser/Client Side)"]
-        F1["Pengguna Umum Browser"] --> F2["chat.html<br/>Tailwind CSS + JavaScript"]
-        F3["Administrator Browser"] --> F4["admin_dashboard.html<br/>Tailwind CSS + JavaScript"]
-        F2 -->|"HTTP Request /chat"| Backend1
-        F4 -->|"HTTP Request /admin"| Backend1
-        Backend1 -->|"JSON Response"| F2
-        Backend1 -->|"Dashboard Data"| F4
-    end
-    
-    subgraph Backend["Backend (Aplikasi Flask Server-Side)"]
-        Backend1["main.py<br/>Entry Point & Routing"] --> Backend2["app/core.py<br/>RAG Orchestration<br/>get_response()"]
-        Backend2 --> Backend3["app/models.py<br/>SQLAlchemy Models<br/>AI Model Init"]
-        Backend2 --> Backend4["app/vector_store.py<br/>Vector Operations<br/>create_vector_store()<br/>hybrid_retrieve()"]
-        Backend1 -->|"Calls get_response"| Backend2
-        Backend2 -->|"Uses Models"| Backend3
-        Backend2 -->|"Calls retrieve"| Backend4
-        Backend2 -->|"RAG Response"| Backend1
-    end
-    
-    subgraph DataLayer["Data Layer (Penyimpanan)"]
-        D1["Basis Data Relasional<br/>SQLAlchemy<br/>AdminUser<br/>KnowledgeBaseFile"]
-        D2["FAISS Vector Store<br/>Document Embeddings"]
-    end
-    
-    Backend3 -->|"SQLAlchemy ORM"| D1
-    Backend4 -->|"Vector Operations"| D2
-    
-    style Frontend fill:#e1f5ff
-    style Backend fill:#fff4e1
-    style DataLayer fill:#e8f5e9
-```
+![System Architecture - Web Application](docs/images/system-architecture.png)
 
 ---
 
