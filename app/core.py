@@ -44,7 +44,7 @@ def create_rag_chain():
     # Load vector store
     vector_store = load_vector_store(embeddings)
     if not vector_store:
-        raise ValueError("Vector store not found. Please run ingest.py first.")
+        raise ValueError("Tidak ditemukan data dalam knowledge base.")
     # Use a dummy retriever, we'll override retrieval below
     retriever = vector_store.as_retriever(
         search_type="similarity", search_kwargs={"k": 1}
