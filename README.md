@@ -117,6 +117,28 @@ Diagram berikut menunjukkan arsitektur lengkap aplikasi web dengan Flask:
 
 ---
 
+## Screenshots
+
+### 1. Chat Interface
+
+Antarmuka chat yang bersih dan modern untuk interaksi dengan Language Center BOT:
+
+![Chat Interface](docs/images/chat-interface.png)
+
+### 2. Admin Login
+
+Halaman login untuk akses ke admin dashboard:
+
+![Admin Login](docs/images/admin-login.png)
+
+### 3. Admin Dashboard - Knowledge Base Management
+
+Dashboard admin untuk mengelola knowledge base, termasuk upload file, preview chunking, embedding, dan manajemen vector database:
+
+![Admin Dashboard](docs/images/admin-dashboard.png)
+
+---
+
 ## Usage
 
 ### 1. Add Documents
